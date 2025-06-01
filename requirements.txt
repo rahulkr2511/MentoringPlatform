@@ -1,0 +1,25 @@
+# System Requirements
+Java Development Kit (JDK) >= 17
+Maven >= 3.8.0
+
+# Database
+H2 Database (included in dependencies)
+
+# Development Tools
+IDE with Java support (e.g., IntelliJ IDEA, Eclipse, VS Code with Java extensions)
+Git
+
+# Build Tools
+Maven (for dependency management and building)
+
+# Runtime Requirements
+Minimum 2GB RAM
+500MB free disk space
+
+# Optional but Recommended
+Postman or similar API testing tool
+Docker (for containerization, optional)
+
+# Note: This is a Spring Boot application that uses Maven for dependency management.
+# All Java dependencies are managed in pom.xml and will be downloaded automatically by Maven.
+# This requirements.txt is for system-level requirements only. 
