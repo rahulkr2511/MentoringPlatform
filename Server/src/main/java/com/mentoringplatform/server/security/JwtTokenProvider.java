@@ -1,4 +1,4 @@
-package com.resumebuilder.server.security;
+package com.mentoringplatform.server.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

@@ -1,4 +1,4 @@
-package com.resumebuilder.server.dto;
+package com.mentoringplatform.server.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

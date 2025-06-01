@@ -1,8 +1,8 @@
-package com.resumebuilder.server.service;
+package com.mentoringplatform.server.service;
 
-import com.resumebuilder.server.model.User;
-import com.resumebuilder.server.repository.UserRepository;
-import com.resumebuilder.server.security.UserPrincipal;
+import com.mentoringplatform.server.model.User;
+import com.mentoringplatform.server.repository.UserRepository;
+import com.mentoringplatform.server.security.UserPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

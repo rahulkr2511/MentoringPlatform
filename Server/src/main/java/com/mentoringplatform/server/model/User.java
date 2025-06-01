@@ -1,4 +1,4 @@
-package com.resumebuilder.server.model;
+package com.mentoringplatform.server.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;

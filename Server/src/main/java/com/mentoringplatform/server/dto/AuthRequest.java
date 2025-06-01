@@ -1,6 +1,5 @@
-package com.resumebuilder.server.dto;
+package com.mentoringplatform.server.dto;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 

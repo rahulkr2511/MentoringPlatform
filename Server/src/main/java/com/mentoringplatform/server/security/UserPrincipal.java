@@ -1,6 +1,6 @@
-package com.resumebuilder.server.security;
+package com.mentoringplatform.server.security;
 
-import com.resumebuilder.server.model.User;
+import com.mentoringplatform.server.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;

@@ -1,6 +1,6 @@
-package com.resumebuilder.server.repository;
+package com.mentoringplatform.server.repository;
 
-import com.resumebuilder.server.model.User;
+import com.mentoringplatform.server.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 

@@ -1,4 +1,4 @@
-package com.resumebuilder.server.security;
+package com.mentoringplatform.server.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

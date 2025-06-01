@@ -1,12 +1,12 @@
-package com.resumebuilder.server.controller;
+package com.mentoringplatform.server.controller;
 
-import com.resumebuilder.server.dto.AuthRequest;
-import com.resumebuilder.server.dto.AuthResponse;
-import com.resumebuilder.server.dto.SignupRequest;
-import com.resumebuilder.server.model.User;
-import com.resumebuilder.server.security.JwtTokenProvider;
-import com.resumebuilder.server.security.UserPrincipal;
-import com.resumebuilder.server.service.UserService;
+import com.mentoringplatform.server.dto.AuthRequest;
+import com.mentoringplatform.server.dto.AuthResponse;
+import com.mentoringplatform.server.dto.SignupRequest;
+import com.mentoringplatform.server.model.User;
+import com.mentoringplatform.server.security.JwtTokenProvider;
+import com.mentoringplatform.server.security.UserPrincipal;
+import com.mentoringplatform.server.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
