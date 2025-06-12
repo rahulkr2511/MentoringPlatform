@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
-import Home from './components/Home.jsx';
-import Login from './components/Login.jsx';
+import Home from './components/Home';
+import Login from './components/Login';
 
 function App() {
   const [currentView, setCurrentView] = useState('home'); // 'home' or 'login'
