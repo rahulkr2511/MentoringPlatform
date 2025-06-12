@@ -6,7 +6,7 @@ const Home = () => {
     <div className="home">
       <div className="home-container">
         <header className="home-header">
-          <h1>Welcome to Mentoring Platform</h1>
+          <h1>Welcome to PeerNest Mentoring</h1>
           <p>Connect, Learn, and Grow with Expert Mentors</p>
         </header>
         
