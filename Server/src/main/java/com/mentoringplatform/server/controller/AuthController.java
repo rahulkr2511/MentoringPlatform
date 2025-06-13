@@ -1,5 +1,6 @@
 package com.mentoringplatform.server.controller;
 
+import com.mentoringplatform.server.dto.ApiResponse;
 import com.mentoringplatform.server.dto.AuthRequest;
 import com.mentoringplatform.server.dto.AuthResponse;
 import com.mentoringplatform.server.dto.SignupRequest;
@@ -17,7 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/monitoringPlatform/auth")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class AuthController {
 
@@ -49,7 +50,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody AuthRequest loginRequest) {
+    public ResponseEntity<ApiResponse<AuthResponse>> authenticateUser(@Valid @RequestBody AuthRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getUsername(),
@@ -61,14 +62,16 @@ public class AuthController {
         String jwt = tokenProvider.generateToken(authentication);
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
-        return ResponseEntity.ok(new AuthResponse(
+        AuthResponse authResponse = new AuthResponse(
                 jwt,
                 userPrincipal.getUsername(),
                 userPrincipal.getEmail(),
                 userPrincipal.getAuthorities().stream()
                         .map(authority -> authority.getAuthority().replace("ROLE_", ""))
                         .toArray(String[]::new)
-        ));
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(authResponse, "Login successful"));
     }
 
     @GetMapping("/me")
