@@ -1,193 +1,83 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/Dashboard.css';
 
-const Dashboard = () => {
-  const [activeSessions, setActiveSessions] = useState([
-    {
-      id: 1,
-      title: 'JavaScript Fundamentals',
-      mentor: 'Sarah Johnson',
-      time: '2:00 PM - 3:30 PM',
-      participants: 8,
-      maxParticipants: 12,
-      status: 'active'
-    },
-    {
-      id: 2,
-      title: 'React Best Practices',
-      mentor: 'Mike Chen',
-      time: '4:00 PM - 5:30 PM',
-      participants: 5,
-      maxParticipants: 10,
-      status: 'upcoming'
+const Dashboard = ({ userData, onLogout }) => {
+  const [user, setUser] = useState(userData || null);
+
+  useEffect(() => {
+    // If no userData passed as prop, try to get from localStorage
+    if (!user && !userData) {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
     }
-  ]);
+  }, [user, userData]);
 
-  const [userSessions, setUserSessions] = useState([
-    {
-      id: 3,
-      title: 'Career Development Workshop',
-      mentor: 'Emily Rodriguez',
-      time: '10:00 AM - 11:30 AM',
-      date: 'Tomorrow',
-      status: 'scheduled'
+  const handleLogout = () => {
+    // Clear localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    
+    // Call parent component's logout callback
+    if (onLogout) {
+      onLogout();
+    } else {
+      // Fallback: redirect to home
+      window.location.href = '/';
     }
-  ]);
-
-  const handleJoinSession = (sessionId) => {
-    // TODO: Implement join session logic
-    console.log('Joining session:', sessionId);
-    alert('Joining session functionality will be implemented here');
   };
 
-  const handleStartSession = (sessionId) => {
-    // TODO: Implement start session logic
-    console.log('Starting session:', sessionId);
-    alert('Start session functionality will be implemented here');
-  };
-
-  const handleCreateSession = () => {
-    // TODO: Implement create session logic
-    console.log('Creating new session');
-    alert('Create session functionality will be implemented here');
-  };
+  if (!user) {
+    return (
+      <div className="dashboard-container">
+        <div className="dashboard-card">
+          <h2>Access Denied</h2>
+          <p>Please log in to access the dashboard.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="dashboard">
-      <div className="dashboard-container">
-        <header className="dashboard-header">
+    <div className="dashboard-container">
+      <div className="dashboard-header">
+        <div className="dashboard-title">
           <h1>Welcome to Your Dashboard</h1>
-          <p>Manage your mentoring sessions and connect with experts</p>
-        </header>
+          <p>Hello, {user.username}!</p>
+        </div>
+        <div className="dashboard-actions">
+          <button onClick={handleLogout} className="btn btn-secondary">
+            Logout
+          </button>
+        </div>
+      </div>
 
-        <div className="dashboard-content">
-          {/* Quick Actions Section */}
+      <div className="dashboard-content">
+        <div className="dashboard-card">
+          <h3>User Information</h3>
+          <div className="user-info">
+            <p><strong>Username:</strong> {user.username}</p>
+            <p><strong>Email:</strong> {user.email}</p>
+            <p><strong>Roles:</strong> {user.roles ? user.roles.join(', ') : 'No roles assigned'}</p>
+          </div>
+        </div>
+
+        <div className="dashboard-card">
+          <h3>Quick Actions</h3>
           <div className="quick-actions">
-            <h2>Quick Actions</h2>
-            <div className="action-buttons">
-              <button 
-                className="btn btn-primary action-btn"
-                onClick={handleCreateSession}
-              >
-                <span className="btn-icon">➕</span>
-                Create New Session
-              </button>
-              <button className="btn btn-secondary action-btn">
-                <span className="btn-icon">🔍</span>
-                Find Sessions
-              </button>
-              <button className="btn btn-secondary action-btn">
-                <span className="btn-icon">👥</span>
-                My Network
-              </button>
-            </div>
+            <button className="btn btn-primary">View Profile</button>
+            <button className="btn btn-primary">Find Mentors</button>
+            <button className="btn btn-primary">My Sessions</button>
+            <button className="btn btn-primary">Messages</button>
           </div>
+        </div>
 
-          {/* Active Sessions Section */}
-          <div className="sessions-section">
-            <h2>Available Sessions</h2>
-            <div className="sessions-grid">
-              {activeSessions.map(session => (
-                <div key={session.id} className="session-card">
-                  <div className="session-header">
-                    <h3>{session.title}</h3>
-                    <span className={`session-status ${session.status}`}>
-                      {session.status === 'active' ? '🟢 Live' : '⏰ Upcoming'}
-                    </span>
-                  </div>
-                  <div className="session-details">
-                    <p><strong>Mentor:</strong> {session.mentor}</p>
-                    <p><strong>Time:</strong> {session.time}</p>
-                    <p><strong>Participants:</strong> {session.participants}/{session.maxParticipants}</p>
-                  </div>
-                  <div className="session-actions">
-                    {session.status === 'active' ? (
-                      <button 
-                        className="btn btn-primary"
-                        onClick={() => handleJoinSession(session.id)}
-                      >
-                        Join Session
-                      </button>
-                    ) : (
-                      <button 
-                        className="btn btn-secondary"
-                        onClick={() => handleJoinSession(session.id)}
-                      >
-                        Join Waitlist
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* My Sessions Section */}
-          <div className="sessions-section">
-            <h2>My Sessions</h2>
-            <div className="sessions-grid">
-              {userSessions.map(session => (
-                <div key={session.id} className="session-card my-session">
-                  <div className="session-header">
-                    <h3>{session.title}</h3>
-                    <span className="session-status scheduled">
-                      📅 {session.date}
-                    </span>
-                  </div>
-                  <div className="session-details">
-                    <p><strong>Mentor:</strong> {session.mentor}</p>
-                    <p><strong>Time:</strong> {session.time}</p>
-                    <p><strong>Status:</strong> {session.status}</p>
-                  </div>
-                  <div className="session-actions">
-                    <button 
-                      className="btn btn-primary"
-                      onClick={() => handleStartSession(session.id)}
-                    >
-                      Start Session
-                    </button>
-                    <button className="btn btn-secondary">
-                      Reschedule
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Stats Section */}
-          <div className="stats-section">
-            <h2>Your Progress</h2>
-            <div className="stats-grid">
-              <div className="stat-card">
-                <div className="stat-icon">📚</div>
-                <div className="stat-content">
-                  <h3>12</h3>
-                  <p>Sessions Completed</p>
-                </div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-icon">🎯</div>
-                <div className="stat-content">
-                  <h3>8</h3>
-                  <p>Goals Achieved</p>
-                </div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-icon">⭐</div>
-                <div className="stat-content">
-                  <h3>4.8</h3>
-                  <p>Average Rating</p>
-                </div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-icon">👥</div>
-                <div className="stat-content">
-                  <h3>15</h3>
-                  <p>Mentors Connected</p>
-                </div>
-              </div>
-            </div>
+        <div className="dashboard-card">
+          <h3>Recent Activity</h3>
+          <div className="recent-activity">
+            <p>No recent activity to display.</p>
+            <p>Start by exploring mentors or updating your profile!</p>
           </div>
         </div>
       </div>

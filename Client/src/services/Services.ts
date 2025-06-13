@@ -1,5 +1,5 @@
 // API Base URL
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'http://localhost:8080/monitoringPlatform';
 
 // Types for API responses
 interface ApiResponse<T> {
