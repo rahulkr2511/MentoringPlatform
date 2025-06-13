@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
-import { AuthService } from '../services/Services.ts';
+import { AuthService, ErrorHandler } from '../services/Services.ts';
 import '../styles/Login.css';
 
 const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
   const [isLogin, setIsLogin] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+  
   const [loginData, setLoginData] = useState({
     username: '',
     password: ''
   });
+  
   const [signupData, setSignupData] = useState({
     username: '',
     email: '',
@@ -15,42 +19,48 @@ const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
     confirmPassword: '',
     userType: 'mentee'
   });
-  const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleLoginChange = (e) => {
-    setLoginData({
-      ...loginData,
-      [e.target.name]: e.target.value
-    });
-    // Clear error when user starts typing
-    if (errors[e.target.name]) {
-      setErrors({...errors, [e.target.name]: ''});
+    const { name, value } = e.target;
+    setLoginData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Clear field-specific error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
     }
   };
 
   const handleSignupChange = (e) => {
-    setSignupData({
-      ...signupData,
-      [e.target.name]: e.target.value
-    });
-    // Clear error when user starts typing
-    if (errors[e.target.name]) {
-      setErrors({...errors, [e.target.name]: ''});
+    const { name, value } = e.target;
+    setSignupData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Clear field-specific error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
     }
   };
 
   const validateLoginForm = () => {
     const newErrors = {};
     
-    if (!loginData.username) {
+    if (!loginData.username.trim()) {
       newErrors.username = 'Username is required';
     }
     
     if (!loginData.password) {
       newErrors.password = 'Password is required';
-    } else if (loginData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
     }
     
     setErrors(newErrors);
@@ -60,14 +70,16 @@ const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
   const validateSignupForm = () => {
     const newErrors = {};
     
-    if (!signupData.username) {
+    if (!signupData.username.trim()) {
       newErrors.username = 'Username is required';
+    } else if (signupData.username.length < 3) {
+      newErrors.username = 'Username must be at least 3 characters';
     }
     
-    if (!signupData.email) {
+    if (!signupData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(signupData.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = 'Please enter a valid email address';
     }
     
     if (!signupData.password) {
@@ -113,10 +125,12 @@ const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
             window.location.href = '/dashboard';
           }
         } else {
-          setErrors({ general: 'Incorrect username or password' });
+          // Handle error using the new error handling utilities
+          const errorMessage = ErrorHandler.getErrorMessage(response.error, 'Login failed');
+          setErrors({ general: errorMessage });
         }
       } catch (error) {
-        setErrors({ general: 'Incorrect username or password' });
+        setErrors({ general: 'Network error. Please check your connection and try again.' });
       } finally {
         setIsLoading(false);
       }
@@ -161,23 +175,20 @@ const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
             onSwitchToSignin();
           }
         } else {
-          // Handle specific signup errors
-          let errorMessage = 'Signup failed';
-          if (response.error) {
-            if (response.error.toLowerCase().includes('username') && response.error.toLowerCase().includes('exists')) {
-              errorMessage = 'Username already exists';
-            } else if (response.error.toLowerCase().includes('email') && response.error.toLowerCase().includes('exists')) {
-              errorMessage = 'Email already exists';
-            } else if (response.error.toLowerCase().includes('password')) {
-              errorMessage = 'Password does not meet requirements';
-            } else {
-              errorMessage = response.error;
-            }
+          // Handle error using the new error handling utilities
+          let errorMessage;
+          
+          if (response.error === 'VALIDATION_ERROR' && response.data) {
+            // Handle validation errors with field-specific details
+            errorMessage = ErrorHandler.handleValidationErrors(response.data);
+          } else {
+            errorMessage = ErrorHandler.getErrorMessage(response.error, 'Signup failed');
           }
+          
           setErrors({ general: errorMessage });
         }
       } catch (error) {
-        setErrors({ general: 'An error occurred during signup. Please try again.' });
+        setErrors({ general: 'Network error. Please check your connection and try again.' });
       } finally {
         setIsLoading(false);
       }
@@ -277,20 +288,6 @@ const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
                 disabled={isLoading}
               />
               {errors.email && <span className="error-message">{errors.email}</span>}
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="userType">I want to</label>
-              <select
-                id="userType"
-                name="userType"
-                value={signupData.userType}
-                onChange={handleSignupChange}
-                disabled={isLoading}
-              >
-                <option value="mentee">Find a Mentor</option>
-                <option value="mentor">Become a Mentor</option>
-              </select>
             </div>
 
             <div className="form-group">

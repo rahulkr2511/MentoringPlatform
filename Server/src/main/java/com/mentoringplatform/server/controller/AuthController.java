@@ -4,11 +4,13 @@ import com.mentoringplatform.server.dto.ApiResponse;
 import com.mentoringplatform.server.dto.AuthRequest;
 import com.mentoringplatform.server.dto.AuthResponse;
 import com.mentoringplatform.server.dto.SignupRequest;
+import com.mentoringplatform.server.dto.SignupResponse;
 import com.mentoringplatform.server.model.User;
 import com.mentoringplatform.server.security.JwtTokenProvider;
 import com.mentoringplatform.server.security.UserPrincipal;
 import com.mentoringplatform.server.service.UserService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -38,15 +40,23 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
+    public ResponseEntity<ApiResponse<SignupResponse>> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
         User user = new User();
         user.setUsername(signupRequest.getUsername());
         user.setEmail(signupRequest.getEmail());
         user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
 
-        userService.createUser(user);
+        User savedUser = userService.createUser(user);
 
-        return ResponseEntity.ok("User registered successfully!");
+        SignupResponse signupResponse = new SignupResponse(
+                savedUser.getUsername(),
+                savedUser.getEmail(),
+                "User registered successfully"
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success(signupResponse, "User registered successfully"));
     }
 
     @PostMapping("/login")
@@ -71,21 +81,27 @@ public class AuthController {
                         .toArray(String[]::new)
         );
 
-        return ResponseEntity.ok(ApiResponse.success(authResponse, "Login successful"));
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success(authResponse, "Login successful"));
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser() {
+    public ResponseEntity<ApiResponse<AuthResponse>> getCurrentUser() {
         UserPrincipal userPrincipal = (UserPrincipal) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
 
-        return ResponseEntity.ok(new AuthResponse(
+        AuthResponse authResponse = new AuthResponse(
                 null,
                 userPrincipal.getUsername(),
                 userPrincipal.getEmail(),
                 userPrincipal.getAuthorities().stream()
                         .map(authority -> authority.getAuthority().replace("ROLE_", ""))
                         .toArray(String[]::new)
-        ));
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success(authResponse, "User details retrieved successfully"));
     }
 } 

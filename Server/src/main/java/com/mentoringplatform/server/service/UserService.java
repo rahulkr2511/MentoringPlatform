@@ -1,5 +1,6 @@
 package com.mentoringplatform.server.service;
 
+import com.mentoringplatform.server.exception.UserAlreadyExistsException;
 import com.mentoringplatform.server.model.User;
 import com.mentoringplatform.server.repository.UserRepository;
 import com.mentoringplatform.server.security.UserPrincipal;
@@ -30,11 +31,11 @@ public class UserService implements UserDetailsService {
     @Transactional
     public User createUser(User user) {
         if (userRepository.existsByUsername(user.getUsername())) {
-            throw new RuntimeException("Username is already taken!");
+            throw new UserAlreadyExistsException("username", "Username is already taken!");
         }
 
         if (userRepository.existsByEmail(user.getEmail())) {
-            throw new RuntimeException("Email is already in use!");
+            throw new UserAlreadyExistsException("email", "Email is already in use!");
         }
 
         // Set default role if not specified
