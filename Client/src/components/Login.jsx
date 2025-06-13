@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 import { AuthService, ErrorHandler } from '../services/Services.ts';
+import Toast from '../shared-components/Toast';
 import '../styles/Login.css';
 
 const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [toast, setToast] = useState({
+    isVisible: false,
+    message: '',
+    type: 'success'
+  });
   
   const [loginData, setLoginData] = useState({
     username: '',
@@ -164,11 +170,16 @@ const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
             userType: 'mentee'
           });
           
+          // Show success toast with message from response
+          const toastMessage = response.message || 'Account created successfully! Please sign in to continue.';
+          setToast({
+            isVisible: true,
+            message: toastMessage,
+            type: 'success'
+          });
+          
           // Switch to login form
           setIsLogin(true);
-          
-          // Show success message
-          alert('Account created successfully! Please sign in with your credentials.');
           
           // Call parent component's callback if provided
           if (onSwitchToSignin) {
@@ -198,6 +209,13 @@ const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
   const toggleForm = () => {
     setIsLogin(!isLogin);
     setErrors({});
+  };
+
+  const handleToastClose = () => {
+    setToast(prev => ({
+      ...prev,
+      isVisible: false
+    }));
   };
 
   return (
@@ -335,6 +353,14 @@ const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
           </p>
         </div>
       </div>
+      
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        isVisible={toast.isVisible}
+        onClose={handleToastClose}
+        duration={5000}
+      />
     </div>
   );
 };
