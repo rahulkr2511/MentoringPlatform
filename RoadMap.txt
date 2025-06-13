@@ -1,0 +1,47 @@
+
+
+
+UI Components (React)
+	•	Login/Register Page
+	•	Dashboard
+	◦	View upcoming sessions
+	◦	Join/Start session buttons
+	•	Mentor Listing Page
+	◦	Filters, profiles, book session
+	•	Video Call Room
+	◦	Video stream (self + remote)
+	◦	Chat panel
+	◦	Timer
+	◦	End Call button
+	•	Post-session Feedback Modal
+
+
+
+Backend Architecture (Spring Boot)
+	•	UserController: Signup, Login, Role-based auth (JWT)
+	•	SessionController: Bookings, scheduling, history
+	•	WebSocketController: Signaling for WebRTC (offer/answer/ICE exchange)
+	•	FeedbackController: Store ratings/comments
+	•	SecurityConfig: JWT filters + CORS config
+
+
+
+Database Schema (PostgreSQL)
+users
+	•	id, name, email, password, role (MENTOR / MENTEE), bio, skills, etc.
+sessions
+	•	id, mentor_id, mentee_id, start_time, end_time, status
+feedback
+	•	id, session_id, rating, comments
+
+
+WebRTC Signaling Flow
+	1	Mentee clicks “Join Call”
+	2	WebSocket connection opens with Spring Boot
+	3	Mentee sends offer SDP
+	4	Server relays to Mentor
+	5	Mentor sends answer SDP
+	6	ICE candidates exchanged via WebSocket
+	7	Media flows peer-to-peer over WebRTC
+
+
