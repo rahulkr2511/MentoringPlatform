@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Home from './components/Home';
 import Login from './components/Login';
-import Dashboard from './components/Dashboard';
+import MenteeDashboard from './components/MenteeDashboard';
+import MentorDashboard from './components/MentorDashboard';
 
 function App() {
   const [currentView, setCurrentView] = useState('home'); // 'home', 'login', or 'dashboard'
@@ -33,10 +34,23 @@ function App() {
     setCurrentView('login');
   };
 
+  const renderDashboard = () => {
+    if (!userData) return null;
+    
+    // Check if user has MENTOR role
+    const isMentor = userData.roles && userData.roles.includes('MENTOR');
+    
+    if (isMentor) {
+      return <MentorDashboard userData={userData} onLogout={handleLogout} />;
+    } else {
+      return <MenteeDashboard userData={userData} onLogout={handleLogout} />;
+    }
+  };
+
   const renderCurrentView = () => {
     switch (currentView) {
       case 'dashboard':
-        return <Dashboard userData={userData} onLogout={handleLogout} />;
+        return renderDashboard();
       case 'login':
         return (
           <Login 
