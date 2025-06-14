@@ -333,23 +333,20 @@ const MentorDashboard = ({ userData, onLogout }) => {
         <div className="dashboard-actions">
           <div className="action-buttons">
             <button 
-              className="btn btn-secondary"
+              className={`btn btn-secondary ${currentView === 'sessions' ? 'active' : ''}`}
               onClick={() => setCurrentView('sessions')}
-              disabled={currentView === 'sessions'}
             >
               📅 Upcoming Sessions
             </button>
             <button 
-              className="btn btn-secondary"
+              className={`btn btn-secondary ${currentView === 'requests' ? 'active' : ''}`}
               onClick={() => setCurrentView('requests')}
-              disabled={currentView === 'requests'}
             >
               📋 Session Requests
             </button>
             <button 
-              className="btn btn-secondary"
+              className={`btn btn-secondary ${currentView === 'video-call' ? 'active' : ''}`}
               onClick={() => setCurrentView('video-call')}
-              disabled={currentView === 'video-call'}
             >
               📹 Active Sessions
             </button>

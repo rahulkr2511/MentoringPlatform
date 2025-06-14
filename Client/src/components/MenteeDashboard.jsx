@@ -292,16 +292,14 @@ const MenteeDashboard = ({ userData, onLogout }) => {
         <div className="dashboard-actions">
           <div className="action-buttons">
             <button 
-              className="btn btn-secondary"
+              className={`btn btn-secondary ${currentView === 'mentors' ? 'active' : ''}`}
               onClick={() => setCurrentView('mentors')}
-              disabled={currentView === 'mentors'}
             >
               🔍 Find Mentors
             </button>
             <button 
-              className="btn btn-secondary"
+              className={`btn btn-secondary ${currentView === 'video-call' ? 'active' : ''}`}
               onClick={() => setCurrentView('video-call')}
-              disabled={currentView === 'video-call'}
             >
               📹 Active Sessions
             </button>
