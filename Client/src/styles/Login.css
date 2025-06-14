@@ -153,6 +153,10 @@
   color: #666;
   font-size: 0.9rem;
   cursor: pointer;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  justify-content: flex-start;
 }
 
 .checkbox-label input[type="checkbox"] {
@@ -251,12 +255,6 @@
   
   .form-row {
     grid-template-columns: 1fr;
-  }
-  
-  .form-options {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: flex-start;
   }
 }
 

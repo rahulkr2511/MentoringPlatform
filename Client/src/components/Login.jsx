@@ -271,14 +271,6 @@ const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
               {errors.password && <span className="error-message">{errors.password}</span>}
             </div>
 
-            <div className="form-options">
-              <label className="checkbox-label">
-                <input type="checkbox" />
-                <span>Remember me</span>
-              </label>
-              <a href="#" className="forgot-password">Forgot password?</a>
-            </div>
-
             <button type="submit" className="btn btn-primary" disabled={isLoading}>
               {isLoading ? 'Signing In...' : 'Sign In'}
             </button>
