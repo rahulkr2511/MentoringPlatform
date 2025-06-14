@@ -38,9 +38,10 @@ public class UserService implements UserDetailsService {
             throw new UserAlreadyExistsException("email", "Email is already in use!");
         }
 
-        // Set default role if not specified
+        // Set role based on the request
         if (user.getRoles().isEmpty()) {
-            user.getRoles().add("USER");
+            // Default to MENTEE if no role is specified
+            user.getRoles().add("MENTEE");
         }
 
         return userRepository.save(user);

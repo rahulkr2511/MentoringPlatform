@@ -13,6 +13,7 @@ interface SignupRequest {
   username: string;
   email: string;
   password: string;
+  role: string; // "MENTOR" or "MENTEE"
 }
 
 interface SignupResponseData {

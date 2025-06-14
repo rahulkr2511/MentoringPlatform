@@ -54,14 +54,16 @@
 .form-group {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.5rem;
+  width: 100%;
 }
 
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
+  width: 100%;
 }
 
 .form-group label {
@@ -70,17 +72,22 @@
   font-size: 0.95rem;
   text-align: left;
   margin-bottom: 0.25rem;
+  width: 100%;
+  max-width: 400px;
 }
 
 .form-group input,
 .form-group select {
   width: 100%;
+  max-width: 400px;
   padding: 12px 16px;
   border: 2px solid #e1e5e9;
   border-radius: 10px;
   font-size: 1rem;
   transition: all 0.3s ease;
   background: #f8f9fa;
+  box-sizing: border-box;
+  margin: 0 auto;
 }
 
 .form-group input:focus,
@@ -91,12 +98,14 @@
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-.form-group input.error {
+.form-group input.error,
+.form-group select.error {
   border-color: #e74c3c;
   background: #fdf2f2;
 }
 
-.form-group input.error:focus {
+.form-group input.error:focus,
+.form-group select.error:focus {
   box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
 }
 
@@ -105,6 +114,9 @@
   font-size: 0.85rem;
   margin-top: 0.25rem;
   font-weight: 500;
+  width: 100%;
+  max-width: 400px;
+  text-align: left;
 }
 
 .form-options {
@@ -112,6 +124,8 @@
   justify-content: space-between;
   align-items: center;
   margin: 0.5rem 0;
+  width: 100%;
+  max-width: 400px;
 }
 
 .checkbox-label {
@@ -153,6 +167,9 @@
   text-align: center;
   display: block;
   width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .btn-primary {
@@ -174,6 +191,10 @@
   margin-top: 2rem;
   padding-top: 2rem;
   border-top: 1px solid #e1e5e9;
+  width: 100%;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .login-footer p {

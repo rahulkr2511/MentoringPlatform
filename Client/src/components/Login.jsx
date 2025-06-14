@@ -23,7 +23,7 @@ const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
     email: '',
     password: '',
     confirmPassword: '',
-    userType: 'mentee'
+    role: 'MENTEE'
   });
 
   const handleLoginChange = (e) => {
@@ -86,6 +86,12 @@ const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(signupData.email)) {
       newErrors.email = 'Please enter a valid email address';
+    }
+    
+    if (!signupData.role) {
+      newErrors.role = 'Please select a role';
+    } else if (!['MENTOR', 'MENTEE'].includes(signupData.role)) {
+      newErrors.role = 'Please select a valid role';
     }
     
     if (!signupData.password) {
@@ -152,7 +158,8 @@ const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
         const signupPayload = {
           username: signupData.username,
           email: signupData.email,
-          password: signupData.password
+          password: signupData.password,
+          role: signupData.role
         };
         
         const response = await AuthService.signup(signupPayload);
@@ -167,7 +174,7 @@ const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
             email: '',
             password: '',
             confirmPassword: '',
-            userType: 'mentee'
+            role: 'MENTEE'
           });
           
           // Show success toast with message from response
@@ -306,6 +313,22 @@ const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
                 disabled={isLoading}
               />
               {errors.email && <span className="error-message">{errors.email}</span>}
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="signup-role">Role</label>
+              <select
+                id="signup-role"
+                name="role"
+                value={signupData.role}
+                onChange={handleSignupChange}
+                className={errors.role ? 'error' : ''}
+                disabled={isLoading}
+              >
+                <option value="MENTEE">Mentee</option>
+                <option value="MENTOR">Mentor</option>
+              </select>
+              {errors.role && <span className="error-message">{errors.role}</span>}
             </div>
 
             <div className="form-group">

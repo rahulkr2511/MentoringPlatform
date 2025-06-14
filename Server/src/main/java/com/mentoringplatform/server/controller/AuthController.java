@@ -45,6 +45,15 @@ public class AuthController {
         user.setUsername(signupRequest.getUsername());
         user.setEmail(signupRequest.getEmail());
         user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
+        
+        // Set the role from the request
+        String role = signupRequest.getRole();
+        if (role != null && (role.equals("MENTOR") || role.equals("MENTEE"))) {
+            user.getRoles().add(role);
+        } else {
+            // Default to MENTEE if invalid role
+            user.getRoles().add("MENTEE");
+        }
 
         User savedUser = userService.createUser(user);
 
