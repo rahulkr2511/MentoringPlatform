@@ -5,7 +5,7 @@ import '../styles/Dashboard.css';
 const MentorDashboard = ({ userData, onLogout }) => {
   const [user, setUser] = useState(userData || null);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentView, setCurrentView] = useState('sessions'); // 'sessions', 'requests', 'video-call'
+  const [currentView, setCurrentView] = useState('sessions'); // 'sessions', 'requests', 'video-call', 'profile'
   const [upcomingSessions, setUpcomingSessions] = useState([]);
   const [sessionRequests, setSessionRequests] = useState([]);
   const [selectedSession, setSelectedSession] = useState(null);
@@ -13,6 +13,16 @@ const MentorDashboard = ({ userData, onLogout }) => {
     roomId: null,
     isInCall: false
   });
+  const [profileData, setProfileData] = useState({
+    name: '',
+    expertise: '',
+    availability: '',
+    hourlyRate: '',
+    description: ''
+  });
+  const [profileErrors, setProfileErrors] = useState({});
+  const [isProfileLoading, setIsProfileLoading] = useState(false);
+  const [profileSuccess, setProfileSuccess] = useState(false);
 
   useEffect(() => {
     if (!user && !userData) {
@@ -30,6 +40,8 @@ const MentorDashboard = ({ userData, onLogout }) => {
       fetchUpcomingSessions();
     } else if (currentView === 'requests') {
       fetchSessionRequests();
+    } else if (currentView === 'profile') {
+      fetchProfileData();
     }
   }, [currentView]);
 
@@ -125,6 +137,18 @@ const MentorDashboard = ({ userData, onLogout }) => {
     setSessionRequests(mockRequests);
   };
 
+  const fetchProfileData = async () => {
+    // Mock data for now - replace with actual API call
+    const mockProfile = {
+      name: 'John Smith',
+      expertise: 'Software Development, React, Node.js',
+      availability: 'Weekdays 6-8 PM, Weekends 2-6 PM',
+      hourlyRate: 50,
+      description: 'Senior software developer with 10+ years of experience in web development. Passionate about mentoring and helping others grow in their tech careers.'
+    };
+    setProfileData(mockProfile);
+  };
+
   const handleLogout = () => {
     AuthService.logout();
     if (onLogout) {
@@ -161,6 +185,78 @@ const MentorDashboard = ({ userData, onLogout }) => {
           : req
       )
     );
+  };
+
+  const handleProfileChange = (e) => {
+    const { name, value } = e.target;
+    setProfileData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Clear field-specific error when user starts typing
+    if (profileErrors[name]) {
+      setProfileErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  const validateProfileForm = () => {
+    const newErrors = {};
+    
+    if (!profileData.name.trim()) {
+      newErrors.name = 'Name is required';
+    }
+    
+    if (!profileData.expertise.trim()) {
+      newErrors.expertise = 'Expertise is required';
+    }
+    
+    if (!profileData.availability.trim()) {
+      newErrors.availability = 'Availability is required';
+    }
+    
+    if (!profileData.hourlyRate) {
+      newErrors.hourlyRate = 'Hourly rate is required';
+    } else if (isNaN(profileData.hourlyRate) || parseFloat(profileData.hourlyRate) <= 0) {
+      newErrors.hourlyRate = 'Please enter a valid hourly rate';
+    }
+    
+    if (!profileData.description.trim()) {
+      newErrors.description = 'Description is required';
+    } else if (profileData.description.length < 50) {
+      newErrors.description = 'Description must be at least 50 characters';
+    }
+    
+    setProfileErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleProfileSubmit = async (e) => {
+    e.preventDefault();
+    if (validateProfileForm()) {
+      setIsProfileLoading(true);
+      try {
+        // Mock API call - replace with actual API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Simulate successful update
+        setProfileSuccess(true);
+        setProfileErrors({});
+        
+        // Hide success message after 3 seconds
+        setTimeout(() => {
+          setProfileSuccess(false);
+        }, 3000);
+        
+      } catch (error) {
+        setProfileErrors({ general: 'Failed to update profile. Please try again.' });
+      } finally {
+        setIsProfileLoading(false);
+      }
+    }
   };
 
   const renderUpcomingSessions = () => (
@@ -301,6 +397,114 @@ const MentorDashboard = ({ userData, onLogout }) => {
     </div>
   );
 
+  const renderProfileUpdate = () => (
+    <div className="dashboard-content">
+      <div className="dashboard-card">
+        <h3>Update Your Profile</h3>
+        <p className="profile-subtitle">Keep your profile information up to date to attract more mentees.</p>
+        
+        {profileErrors.general && (
+          <div className="error-message general-error">
+            {profileErrors.general}
+          </div>
+        )}
+        
+        {profileSuccess && (
+          <div className="success-message">
+            ✅ Profile updated successfully!
+          </div>
+        )}
+        
+        <form onSubmit={handleProfileSubmit} className="profile-form">
+          <div className="form-group">
+            <label htmlFor="name">Full Name</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={profileData.name}
+              onChange={handleProfileChange}
+              className={profileErrors.name ? 'error' : ''}
+              placeholder="Enter your full name"
+              disabled={isProfileLoading}
+            />
+            {profileErrors.name && <span className="error-message">{profileErrors.name}</span>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="hourlyRate">Hourly Rate ($)</label>
+            <input
+              type="number"
+              id="hourlyRate"
+              name="hourlyRate"
+              value={profileData.hourlyRate}
+              onChange={handleProfileChange}
+              className={profileErrors.hourlyRate ? 'error' : ''}
+              placeholder="50"
+              min="1"
+              disabled={isProfileLoading}
+            />
+            {profileErrors.hourlyRate && <span className="error-message">{profileErrors.hourlyRate}</span>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="expertise">Areas of Expertise</label>
+            <input
+              type="text"
+              id="expertise"
+              name="expertise"
+              value={profileData.expertise}
+              onChange={handleProfileChange}
+              className={profileErrors.expertise ? 'error' : ''}
+              placeholder="e.g., Software Development, React, Node.js, Data Science"
+              disabled={isProfileLoading}
+            />
+            {profileErrors.expertise && <span className="error-message">{profileErrors.expertise}</span>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="availability">Availability</label>
+            <input
+              type="text"
+              id="availability"
+              name="availability"
+              value={profileData.availability}
+              onChange={handleProfileChange}
+              className={profileErrors.availability ? 'error' : ''}
+              placeholder="e.g., Weekdays 6-8 PM, Weekends 2-6 PM"
+              disabled={isProfileLoading}
+            />
+            {profileErrors.availability && <span className="error-message">{profileErrors.availability}</span>}
+          </div>
+
+          <div className="form-group full-width">
+            <label htmlFor="description">About You</label>
+            <textarea
+              id="description"
+              name="description"
+              value={profileData.description}
+              onChange={handleProfileChange}
+              className={profileErrors.description ? 'error' : ''}
+              placeholder="Tell mentees about your experience, background, and what you can help them with..."
+              rows="6"
+              disabled={isProfileLoading}
+            />
+            {profileErrors.description && <span className="error-message">{profileErrors.description}</span>}
+            <div className="character-count">
+              {profileData.description.length}/500 characters
+            </div>
+          </div>
+
+          <div className="form-group full-width">
+            <button type="submit" className="btn btn-primary" disabled={isProfileLoading}>
+              {isProfileLoading ? 'Updating Profile...' : 'Update Profile'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+
   if (isLoading) {
     return (
       <div className="dashboard-container">
@@ -350,6 +554,12 @@ const MentorDashboard = ({ userData, onLogout }) => {
             >
               📹 Active Sessions
             </button>
+            <button 
+              className={`btn btn-secondary ${currentView === 'profile' ? 'active' : ''}`}
+              onClick={() => setCurrentView('profile')}
+            >
+              👤 Update Profile
+            </button>
             <button onClick={handleLogout} className="btn btn-logout">
               🚪 Logout
             </button>
@@ -360,6 +570,7 @@ const MentorDashboard = ({ userData, onLogout }) => {
       {currentView === 'sessions' && renderUpcomingSessions()}
       {currentView === 'requests' && renderSessionRequests()}
       {currentView === 'video-call' && renderVideoCall()}
+      {currentView === 'profile' && renderProfileUpdate()}
     </div>
   );
 };

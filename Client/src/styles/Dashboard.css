@@ -47,34 +47,38 @@
 
 .action-buttons {
   display: flex;
-  gap: 15px;
+  gap: 12px;
   align-items: center;
-  flex-wrap: nowrap;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 8px;
-  border-radius: 15px;
-  backdrop-filter: blur(10px);
+  flex-wrap: wrap;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+  padding: 12px 16px;
+  border-radius: 20px;
+  backdrop-filter: blur(15px);
   border: 1px solid rgba(255, 255, 255, 0.2);
+  justify-content: flex-end;
+  max-width: 700px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 .action-buttons .btn {
-  padding: 16px 28px;
-  font-size: 1.05rem;
-  font-weight: 700;
-  border-radius: 15px;
+  padding: 14px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 12px;
   border: none;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   white-space: nowrap;
   position: relative;
   overflow: hidden;
-  min-width: 140px;
+  min-width: 130px;
   justify-content: center;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  flex: 0 0 auto;
 }
 
 .action-buttons .btn::before {
@@ -697,6 +701,110 @@
   font-weight: 600;
 }
 
+/* Profile Update Form */
+.profile-subtitle {
+  color: #6c757d;
+  font-size: 1rem;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.profile-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.profile-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.profile-form .form-group.full-width {
+  grid-column: 1 / -1;
+  width: 100%;
+  align-items: flex-start;
+}
+
+.profile-form .form-group.full-width input,
+.profile-form .form-group.full-width textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.profile-form label {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 1rem;
+  text-align: left;
+  margin-bottom: 0;
+  padding: 0;
+  align-self: flex-start;
+}
+
+.profile-form input,
+.profile-form textarea {
+  padding: 12px 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: #f8f9fa;
+  font-family: inherit;
+  width: 96%;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.profile-form input:focus,
+.profile-form textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.profile-form input.error,
+.profile-form textarea.error {
+  border-color: #e74c3c;
+  background: #fdf2f2;
+}
+
+.profile-form input.error:focus,
+.profile-form textarea.error:focus {
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+}
+
+.profile-form textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.character-count {
+  font-size: 0.85rem;
+  color: #6c757d;
+  text-align: right;
+  margin-top: 5px;
+}
+
+.success-message {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  color: #155724;
+  padding: 15px 20px;
+  border-radius: 10px;
+  border: 1px solid #c3e6cb;
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 20px;
+  animation: fadeInUp 0.5s ease-out;
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .dashboard-header {
@@ -718,15 +826,23 @@
   .action-buttons {
     flex-wrap: wrap;
     justify-content: center;
-    gap: 12px;
-    padding: 12px;
+    gap: 10px;
+    padding: 10px 14px;
     width: 100%;
+    max-width: 100%;
   }
   
   .action-buttons .btn {
     min-width: 120px;
-    padding: 14px 20px;
-    font-size: 0.95rem;
+    padding: 12px 18px;
+    font-size: 0.9rem;
+    flex: 0 0 auto;
+  }
+  
+  .profile-form {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    max-width: 100%;
   }
   
   .dashboard-content {
@@ -775,14 +891,20 @@
   
   .action-buttons {
     flex-direction: column;
-    gap: 10px;
-    padding: 15px;
+    gap: 8px;
+    padding: 12px;
+    align-items: stretch;
   }
   
   .action-buttons .btn {
     min-width: 100%;
-    padding: 16px 20px;
-    font-size: 1rem;
+    padding: 14px 16px;
+    font-size: 0.95rem;
+    flex: 1;
+  }
+  
+  .profile-form {
+    gap: 15px;
   }
   
   .dashboard-card {
