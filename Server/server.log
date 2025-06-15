@@ -1,0 +1,93 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< com.mentoringplatform:server >--------------------
+[INFO] Building mentoring-platform-server 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:3.2.3:run (default-cli) > test-compile @ server >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ server ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ server ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ server ---
+[INFO] skip non existing resourceDirectory /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ server ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] <<< spring-boot:3.2.3:run (default-cli) < test-compile @ server <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:3.2.3:run (default-cli) @ server ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+[32m :: Spring Boot :: [39m              [2m (v3.2.3)[0;39m
+
+[2m2025-06-15T12:14:10.255+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mc.m.server.ServerApplication            [0;39m [2m:[0;39m Starting ServerApplication using Java 23.0.2 with PID 29320 (/Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/target/classes started by rahulkr in /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server)
+[2m2025-06-15T12:14:10.255+05:30[0;39m [32mDEBUG[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mc.m.server.ServerApplication            [0;39m [2m:[0;39m Running with Spring Boot v3.2.3, Spring v6.1.4
+[2m2025-06-15T12:14:10.256+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mc.m.server.ServerApplication            [0;39m [2m:[0;39m No active profile set, falling back to 1 default profile: "default"
+[2m2025-06-15T12:14:10.469+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36m.s.d.r.c.RepositoryConfigurationDelegate[0;39m [2m:[0;39m Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+[2m2025-06-15T12:14:10.483+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36m.s.d.r.c.RepositoryConfigurationDelegate[0;39m [2m:[0;39m Finished Spring Data repository scanning in 12 ms. Found 1 JPA repository interface.
+[2m2025-06-15T12:14:10.653+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mo.s.b.w.embedded.tomcat.TomcatWebServer [0;39m [2m:[0;39m Tomcat initialized with port 8080 (http)
+[2m2025-06-15T12:14:10.657+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mo.apache.catalina.core.StandardService  [0;39m [2m:[0;39m Starting service [Tomcat]
+[2m2025-06-15T12:14:10.657+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mo.apache.catalina.core.StandardEngine   [0;39m [2m:[0;39m Starting Servlet engine: [Apache Tomcat/10.1.19]
+[2m2025-06-15T12:14:10.671+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mo.a.c.c.C.[Tomcat].[localhost].[/]      [0;39m [2m:[0;39m Initializing Spring embedded WebApplicationContext
+[2m2025-06-15T12:14:10.672+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mw.s.c.ServletWebServerApplicationContext[0;39m [2m:[0;39m Root WebApplicationContext: initialization completed in 398 ms
+[2m2025-06-15T12:14:10.684+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mcom.zaxxer.hikari.HikariDataSource      [0;39m [2m:[0;39m HikariPool-1 - Starting...
+[2m2025-06-15T12:14:10.736+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mcom.zaxxer.hikari.pool.HikariPool       [0;39m [2m:[0;39m HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:mentoringdb user=SA
+[2m2025-06-15T12:14:10.736+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mcom.zaxxer.hikari.HikariDataSource      [0;39m [2m:[0;39m HikariPool-1 - Start completed.
+[2m2025-06-15T12:14:10.740+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mo.s.b.a.h2.H2ConsoleAutoConfiguration   [0;39m [2m:[0;39m H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:mentoringdb'
+[2m2025-06-15T12:14:10.781+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mo.hibernate.jpa.internal.util.LogHelper [0;39m [2m:[0;39m HHH000204: Processing PersistenceUnitInfo [name: default]
+[2m2025-06-15T12:14:10.800+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36morg.hibernate.Version                   [0;39m [2m:[0;39m HHH000412: Hibernate ORM core version 6.4.4.Final
+[2m2025-06-15T12:14:10.811+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mo.h.c.internal.RegionFactoryInitiator   [0;39m [2m:[0;39m HHH000026: Second-level cache disabled
+[2m2025-06-15T12:14:10.872+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mo.s.o.j.p.SpringPersistenceUnitInfo     [0;39m [2m:[0;39m No LoadTimeWeaver setup: ignoring JPA class transformer
+[2m2025-06-15T12:14:10.885+05:30[0;39m [33m WARN[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36morg.hibernate.orm.deprecation           [0;39m [2m:[0;39m HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+[2m2025-06-15T12:14:11.167+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mo.h.e.t.j.p.i.JtaPlatformInitiator      [0;39m [2m:[0;39m HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+Hibernate: create table user_roles (user_id bigint not null, role varchar(255))
+Hibernate: create table users (id bigint generated by default as identity, availability varchar(255), description varchar(1000), email varchar(255), enabled boolean not null, expertise varchar(255), hourly_rate float(53), full_name varchar(255), password varchar(255), username varchar(255), primary key (id))
+Hibernate: alter table if exists users drop constraint if exists UK_6dotkott2kjsp8vw4d0m25fb7
+Hibernate: alter table if exists users add constraint UK_6dotkott2kjsp8vw4d0m25fb7 unique (email)
+Hibernate: alter table if exists users drop constraint if exists UK_r43af9ap4edm43mmtq01oddj6
+Hibernate: alter table if exists users add constraint UK_r43af9ap4edm43mmtq01oddj6 unique (username)
+Hibernate: alter table if exists user_roles add constraint FKhfh9dx7w3ubf1co1vdev94g3f foreign key (user_id) references users
+[2m2025-06-15T12:14:11.188+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mj.LocalContainerEntityManagerFactoryBean[0;39m [2m:[0;39m Initialized JPA EntityManagerFactory for persistence unit 'default'
+[2m2025-06-15T12:14:11.291+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mo.s.d.j.r.query.QueryEnhancerFactory    [0;39m [2m:[0;39m Hibernate is in classpath; If applicable, HQL parser will be used.
+[2m2025-06-15T12:14:11.450+05:30[0;39m [32mDEBUG[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mc.m.s.security.JwtAuthenticationFilter  [0;39m [2m:[0;39m Filter 'jwtAuthenticationFilter' configured for use
+[2m2025-06-15T12:14:11.485+05:30[0;39m [33m WARN[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mJpaBaseConfiguration$JpaWebConfiguration[0;39m [2m:[0;39m spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+[2m2025-06-15T12:14:11.594+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mo.s.s.web.DefaultSecurityFilterChain    [0;39m [2m:[0;39m Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@17596317, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@375f276e, org.springframework.security.web.context.SecurityContextHolderFilter@a49cdd6, org.springframework.security.web.header.HeaderWriterFilter@3e1c566d, org.springframework.web.filter.CorsFilter@297bbd41, org.springframework.security.web.authentication.logout.LogoutFilter@218e28d9, com.mentoringplatform.server.security.JwtAuthenticationFilter@11eb8842, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@258e5601, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@58a06477, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@3b5f72fa, org.springframework.security.web.session.SessionManagementFilter@c52c362, org.springframework.security.web.access.ExceptionTranslationFilter@50cb64d5, org.springframework.security.web.access.intercept.AuthorizationFilter@b257072]
+[2m2025-06-15T12:14:11.691+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mo.s.b.w.embedded.tomcat.TomcatWebServer [0;39m [2m:[0;39m Tomcat started on port 8080 (http) with context path ''
+[2m2025-06-15T12:14:11.694+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[           main][0;39m [2m[0;39m[36mc.m.server.ServerApplication            [0;39m [2m:[0;39m Started ServerApplication in 1.541 seconds (process running for 1.647)
+[2m2025-06-15T12:14:25.120+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[nio-8080-exec-1][0;39m [2m[0;39m[36mo.a.c.c.C.[Tomcat].[localhost].[/]      [0;39m [2m:[0;39m Initializing Spring DispatcherServlet 'dispatcherServlet'
+[2m2025-06-15T12:14:25.120+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[nio-8080-exec-1][0;39m [2m[0;39m[36mo.s.web.servlet.DispatcherServlet       [0;39m [2m:[0;39m Initializing Servlet 'dispatcherServlet'
+[2m2025-06-15T12:14:25.121+05:30[0;39m [32m INFO[0;39m [35m29320[0;39m [2m---[0;39m [2m[nio-8080-exec-1][0;39m [2m[0;39m[36mo.s.web.servlet.DispatcherServlet       [0;39m [2m:[0;39m Completed initialization in 0 ms
+[2m2025-06-15T12:14:25.126+05:30[0;39m [32mDEBUG[0;39m [35m29320[0;39m [2m---[0;39m [2m[nio-8080-exec-1][0;39m [2m[0;39m[36mo.s.security.web.FilterChainProxy       [0;39m [2m:[0;39m Securing POST /monitoringPlatform/auth/signup
+[2m2025-06-15T12:14:25.128+05:30[0;39m [32mDEBUG[0;39m [35m29320[0;39m [2m---[0;39m [2m[nio-8080-exec-1][0;39m [2m[0;39m[36mo.s.s.w.a.AnonymousAuthenticationFilter [0;39m [2m:[0;39m Set SecurityContextHolder to anonymous SecurityContext
+[2m2025-06-15T12:14:25.128+05:30[0;39m [32mDEBUG[0;39m [35m29320[0;39m [2m---[0;39m [2m[nio-8080-exec-1][0;39m [2m[0;39m[36mo.s.security.web.FilterChainProxy       [0;39m [2m:[0;39m Secured POST /monitoringPlatform/auth/signup
+Hibernate: select u1_0.id from users u1_0 where u1_0.username=? fetch first ? rows only
+Hibernate: select u1_0.id from users u1_0 where u1_0.email=? fetch first ? rows only
+Hibernate: insert into users (availability,description,email,enabled,expertise,hourly_rate,full_name,password,username,id) values (?,?,?,?,?,?,?,?,?,default)
+Hibernate: insert into user_roles (user_id,role) values (?,?)
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  03:31 min
+[INFO] Finished at: 2025-06-15T12:17:41+05:30
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:3.2.3:run (default-cli) on project server: Process terminated with exit code: 137 -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
