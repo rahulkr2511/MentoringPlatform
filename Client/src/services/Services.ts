@@ -41,6 +41,25 @@ interface UserResponseData {
   roles: string[];
 }
 
+// Profile types
+interface ProfileRequest {
+  name: string;
+  expertise: string;
+  availability: string;
+  hourlyRate: number;
+  description: string;
+}
+
+interface ProfileResponseData {
+  name: string;
+  expertise: string;
+  availability: string;
+  hourlyRate: number;
+  description: string;
+  username: string;
+  email: string;
+}
+
 // Error types
 interface ValidationErrors {
   [key: string]: string;
@@ -136,6 +155,46 @@ export const AuthService = {
   },
 };
 
+// Profile Services
+export const ProfileService = {
+  // Get mentor profile
+  getProfile: async (): Promise<ApiResponse<ProfileResponseData>> => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return {
+        success: false,
+        error: 'No authentication token found',
+      };
+    }
+
+    return apiCall<ProfileResponseData>('/mentor/profile', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  },
+
+  // Update mentor profile
+  updateProfile: async (profileData: ProfileRequest): Promise<ApiResponse<ProfileResponseData>> => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return {
+        success: false,
+        error: 'No authentication token found',
+      };
+    }
+
+    return apiCall<ProfileResponseData>('/mentor/profile', {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(profileData),
+    });
+  },
+};
+
 // Error handling utilities
 export const ErrorHandler = {
   // Get user-friendly error message based on error code
@@ -162,5 +221,6 @@ export const ErrorHandler = {
 // Export default
 export default {
   AuthService,
+  ProfileService,
   ErrorHandler,
 }; 

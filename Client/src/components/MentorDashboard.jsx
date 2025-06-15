@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AuthService } from '../services/Services.ts';
+import { AuthService, ProfileService } from '../services/Services.ts';
 import '../styles/Dashboard.css';
 
 const MentorDashboard = ({ userData, onLogout }) => {
@@ -138,15 +138,38 @@ const MentorDashboard = ({ userData, onLogout }) => {
   };
 
   const fetchProfileData = async () => {
-    // Mock data for now - replace with actual API call
-    const mockProfile = {
-      name: 'John Smith',
-      expertise: 'Software Development, React, Node.js',
-      availability: 'Weekdays 6-8 PM, Weekends 2-6 PM',
-      hourlyRate: 50,
-      description: 'Senior software developer with 10+ years of experience in web development. Passionate about mentoring and helping others grow in their tech careers.'
-    };
-    setProfileData(mockProfile);
+    try {
+      const response = await ProfileService.getProfile();
+      if (response.success && response.data) {
+        setProfileData({
+          name: response.data.name || '',
+          expertise: response.data.expertise || '',
+          availability: response.data.availability || '',
+          hourlyRate: response.data.hourlyRate ? response.data.hourlyRate.toString() : '',
+          description: response.data.description || ''
+        });
+      } else {
+        console.error('Failed to fetch profile:', response.error);
+        // Set default empty values if profile doesn't exist
+        setProfileData({
+          name: '',
+          expertise: '',
+          availability: '',
+          hourlyRate: '',
+          description: ''
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching profile data:', error);
+      // Set default empty values on error
+      setProfileData({
+        name: '',
+        expertise: '',
+        availability: '',
+        hourlyRate: '',
+        description: ''
+      });
+    }
   };
 
   const handleLogout = () => {
@@ -226,8 +249,6 @@ const MentorDashboard = ({ userData, onLogout }) => {
     
     if (!profileData.description.trim()) {
       newErrors.description = 'Description is required';
-    } else if (profileData.description.length < 50) {
-      newErrors.description = 'Description must be at least 50 characters';
     }
     
     setProfileErrors(newErrors);
@@ -239,19 +260,41 @@ const MentorDashboard = ({ userData, onLogout }) => {
     if (validateProfileForm()) {
       setIsProfileLoading(true);
       try {
-        // Mock API call - replace with actual API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        const profileRequest = {
+          name: profileData.name.trim(),
+          expertise: profileData.expertise.trim(),
+          availability: profileData.availability.trim(),
+          hourlyRate: parseFloat(profileData.hourlyRate),
+          description: profileData.description.trim()
+        };
+
+        const response = await ProfileService.updateProfile(profileRequest);
         
-        // Simulate successful update
-        setProfileSuccess(true);
-        setProfileErrors({});
-        
-        // Hide success message after 3 seconds
-        setTimeout(() => {
-          setProfileSuccess(false);
-        }, 3000);
+        if (response.success) {
+          setProfileSuccess(true);
+          setProfileErrors({});
+          
+          // Update the profile data with the response
+          if (response.data) {
+            setProfileData({
+              name: response.data.name || profileData.name,
+              expertise: response.data.expertise || profileData.expertise,
+              availability: response.data.availability || profileData.availability,
+              hourlyRate: response.data.hourlyRate ? response.data.hourlyRate.toString() : profileData.hourlyRate,
+              description: response.data.description || profileData.description
+            });
+          }
+          
+          // Hide success message after 3 seconds
+          setTimeout(() => {
+            setProfileSuccess(false);
+          }, 3000);
+        } else {
+          setProfileErrors({ general: response.error || 'Failed to update profile. Please try again.' });
+        }
         
       } catch (error) {
+        console.error('Error updating profile:', error);
         setProfileErrors({ general: 'Failed to update profile. Please try again.' });
       } finally {
         setIsProfileLoading(false);

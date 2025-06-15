@@ -33,4 +33,20 @@ public class User {
     private Set<String> roles = new HashSet<>();
 
     private boolean enabled = true;
+    
+    // Profile fields for mentors
+    @Column(name = "full_name")
+    private String name;
+    
+    @Column(name = "expertise")
+    private String expertise;
+    
+    @Column(name = "availability")
+    private String availability;
+    
+    @Column(name = "hourly_rate")
+    private Double hourlyRate;
+    
+    @Column(name = "description", length = 1000)
+    private String description;
 } 

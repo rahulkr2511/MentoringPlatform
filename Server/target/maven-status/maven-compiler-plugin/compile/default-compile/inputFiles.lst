@@ -1,12 +1,16 @@
+/Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/dto/ProfileRequest.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/dto/SignupResponse.java
+/Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/service/ProfileService.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/security/SecurityConfig.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/ServerApplication.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/security/JwtTokenProvider.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/model/User.java
+/Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/dto/ProfileResponse.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/dto/ApiResponse.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/dto/AuthRequest.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/controller/AuthController.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/service/UserService.java
+/Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/controller/ProfileController.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/dto/AuthResponse.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/exception/UserAlreadyExistsException.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/dto/SignupRequest.java
