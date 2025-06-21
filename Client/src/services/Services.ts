@@ -73,6 +73,32 @@ interface MentorDetailsResponse {
   enabled: boolean;
 }
 
+// Session types
+interface SessionBookingRequest {
+  mentorId: number;
+  scheduledDateTime: string; // ISO string
+  durationMinutes: number;
+  sessionType?: string;
+  notes?: string;
+}
+
+interface SessionResponse {
+  id: number;
+  mentorId: number;
+  mentorName: string;
+  mentorUsername: string;
+  menteeId: number;
+  menteeName: string;
+  menteeUsername: string;
+  scheduledDateTime: string;
+  durationMinutes: number;
+  status: string;
+  sessionType: string;
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Error types
 interface ValidationErrors {
   [key: string]: string;
@@ -247,6 +273,100 @@ export const MentorService = {
   },
 };
 
+// Session Services
+export const SessionService = {
+  // Book a new session
+  bookSession: async (bookingRequest: SessionBookingRequest): Promise<ApiResponse<SessionResponse>> => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return {
+        success: false,
+        error: 'No authentication token found',
+      };
+    }
+
+    return apiCall<SessionResponse>('/sessions/book', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(bookingRequest),
+    });
+  },
+
+  // Get upcoming sessions
+  getUpcomingSessions: async (): Promise<ApiResponse<SessionResponse[]>> => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return {
+        success: false,
+        error: 'No authentication token found',
+      };
+    }
+
+    return apiCall<SessionResponse[]>('/sessions/upcoming', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  },
+
+  // Get session history
+  getSessionHistory: async (): Promise<ApiResponse<SessionResponse[]>> => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return {
+        success: false,
+        error: 'No authentication token found',
+      };
+    }
+
+    return apiCall<SessionResponse[]>('/sessions/history', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  },
+
+  // Update session status (for mentors)
+  updateSessionStatus: async (sessionId: number, status: string): Promise<ApiResponse<SessionResponse>> => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return {
+        success: false,
+        error: 'No authentication token found',
+      };
+    }
+
+    return apiCall<SessionResponse>(`/sessions/${sessionId}/status?status=${status}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  },
+
+  // Cancel session
+  cancelSession: async (sessionId: number): Promise<ApiResponse<SessionResponse>> => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return {
+        success: false,
+        error: 'No authentication token found',
+      };
+    }
+
+    return apiCall<SessionResponse>(`/sessions/${sessionId}/cancel`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  },
+};
+
 // Error handling utilities
 export const ErrorHandler = {
   // Get user-friendly error message based on error code
@@ -275,5 +395,6 @@ export default {
   AuthService,
   ProfileService,
   MentorService,
+  SessionService,
   ErrorHandler,
 }; 

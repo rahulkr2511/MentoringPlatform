@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { AuthService, MentorService } from '../services/Services.ts';
+import { AuthService, MentorService, SessionService } from '../services/Services.ts';
 import '../styles/Dashboard.css';
 
 const MenteeDashboard = ({ userData, onLogout }) => {
   const [user, setUser] = useState(userData || null);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentView, setCurrentView] = useState('mentors'); // 'mentors', 'video-call'
+  const [currentView, setCurrentView] = useState('mentors'); // 'mentors', 'video-call', 'sessions'
   const [mentors, setMentors] = useState([]);
   const [selectedMentor, setSelectedMentor] = useState(null);
   const [filters, setFilters] = useState({
@@ -15,6 +15,14 @@ const MenteeDashboard = ({ userData, onLogout }) => {
   });
   const [filteredMentors, setFilteredMentors] = useState([]);
   const [isFiltering, setIsFiltering] = useState(false);
+  const [upcomingSessions, setUpcomingSessions] = useState([]);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [bookingData, setBookingData] = useState({
+    scheduledDateTime: '',
+    durationMinutes: 60,
+    sessionType: 'VIDEO_CALL',
+    notes: ''
+  });
   const [videoCallData, setVideoCallData] = useState({
     roomId: null,
     isInCall: false
@@ -35,6 +43,8 @@ const MenteeDashboard = ({ userData, onLogout }) => {
   useEffect(() => {
     if (currentView === 'mentors') {
       fetchMentors();
+    } else if (currentView === 'sessions') {
+      fetchUpcomingSessions();
     }
   }, [currentView]);
 
@@ -98,6 +108,24 @@ const MenteeDashboard = ({ userData, onLogout }) => {
     }
   };
 
+  const fetchUpcomingSessions = async () => {
+    setIsLoading(true);
+    try {
+      const response = await SessionService.getUpcomingSessions();
+      if (response.success && response.data) {
+        setUpcomingSessions(response.data);
+      } else {
+        console.error('Failed to fetch upcoming sessions:', response.error);
+        setUpcomingSessions([]);
+      }
+    } catch (error) {
+      console.error('Error fetching upcoming sessions:', error);
+      setUpcomingSessions([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleLogout = () => {
     AuthService.logout();
     if (onLogout) {
@@ -109,10 +137,48 @@ const MenteeDashboard = ({ userData, onLogout }) => {
 
   const handleBookSession = (mentor) => {
     setSelectedMentor(mentor);
-    // Generate a room ID for the video call
-    const roomId = `session_${mentor.id}_${Date.now()}`;
-    setVideoCallData({ roomId, isInCall: true });
-    setCurrentView('video-call');
+    setShowBookingModal(true);
+  };
+
+  const handleBookingSubmit = async () => {
+    if (!selectedMentor || !bookingData.scheduledDateTime) {
+      alert('Please select a date and time for the session');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const bookingRequest = {
+        mentorId: selectedMentor.id,
+        scheduledDateTime: bookingData.scheduledDateTime,
+        durationMinutes: bookingData.durationMinutes,
+        sessionType: bookingData.sessionType,
+        notes: bookingData.notes
+      };
+
+      const response = await SessionService.bookSession(bookingRequest);
+      if (response.success) {
+        alert('Session booked successfully!');
+        setShowBookingModal(false);
+        setBookingData({
+          scheduledDateTime: '',
+          durationMinutes: 60,
+          sessionType: 'VIDEO_CALL',
+          notes: ''
+        });
+        // Refresh sessions if we're on the sessions view
+        if (currentView === 'sessions') {
+          fetchUpcomingSessions();
+        }
+      } else {
+        alert('Failed to book session: ' + response.error);
+      }
+    } catch (error) {
+      console.error('Error booking session:', error);
+      alert('Failed to book session. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleFilterChange = (filterType, value) => {
@@ -149,6 +215,35 @@ const MenteeDashboard = ({ userData, onLogout }) => {
 
     return () => clearTimeout(timer);
   }, [filters]);
+
+  const handleCancelSession = async (sessionId) => {
+    if (!confirm('Are you sure you want to cancel this session?')) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await SessionService.cancelSession(sessionId);
+      if (response.success) {
+        alert('Session cancelled successfully!');
+        fetchUpcomingSessions();
+      } else {
+        alert('Failed to cancel session: ' + response.error);
+      }
+    } catch (error) {
+      console.error('Error cancelling session:', error);
+      alert('Failed to cancel session. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleJoinSession = (session) => {
+    // Generate a room ID for the video call
+    const roomId = `session_${session.id}_${Date.now()}`;
+    setVideoCallData({ roomId, isInCall: true });
+    setCurrentView('video-call');
+  };
 
   const renderMentorListing = () => (
     <div className="dashboard-content">
@@ -289,6 +384,136 @@ const MenteeDashboard = ({ userData, onLogout }) => {
     </div>
   );
 
+  const renderSessions = () => (
+    <div className="dashboard-content">
+      <div className="dashboard-card">
+        <h3>Upcoming Sessions</h3>
+        <div className="sessions-count">
+          <p>You have {upcomingSessions.length} upcoming session{upcomingSessions.length !== 1 ? 's' : ''}</p>
+        </div>
+      </div>
+
+      <div className="sessions-grid">
+        {upcomingSessions.length === 0 ? (
+          <div className="no-sessions">
+            <p>No upcoming sessions. Book a session with a mentor to get started!</p>
+          </div>
+        ) : (
+          upcomingSessions.map(session => (
+            <div key={session.id} className="session-card">
+              <div className="session-header">
+                <h4>Session with {session.mentorName}</h4>
+                <div className={`session-status ${session.status.toLowerCase()}`}>
+                  {session.status}
+                </div>
+              </div>
+              <div className="session-info">
+                <p><strong>Date:</strong> {new Date(session.scheduledDateTime).toLocaleDateString()}</p>
+                <p><strong>Time:</strong> {new Date(session.scheduledDateTime).toLocaleTimeString()}</p>
+                <p><strong>Duration:</strong> {session.durationMinutes} minutes</p>
+                <p><strong>Type:</strong> {session.sessionType}</p>
+                {session.notes && <p><strong>Notes:</strong> {session.notes}</p>}
+              </div>
+              <div className="session-actions">
+                <button 
+                  className="btn btn-primary"
+                  onClick={() => handleJoinSession(session)}
+                  disabled={session.status !== 'CONFIRMED'}
+                >
+                  {session.status === 'CONFIRMED' ? 'Join Session' : 'Waiting for Confirmation'}
+                </button>
+                <button 
+                  className="btn btn-secondary"
+                  onClick={() => handleCancelSession(session.id)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+
+  const renderBookingModal = () => {
+    if (!showBookingModal || !selectedMentor) return null;
+
+    return (
+      <div className="modal-overlay">
+        <div className="booking-modal">
+          <div className="modal-header">
+            <h3>Book Session with {selectedMentor.name}</h3>
+            <button 
+              className="modal-close"
+              onClick={() => setShowBookingModal(false)}
+            >
+              ×
+            </button>
+          </div>
+          <div className="modal-content">
+            <div className="form-group">
+              <label>Date & Time:</label>
+              <input
+                type="datetime-local"
+                value={bookingData.scheduledDateTime}
+                onChange={(e) => setBookingData(prev => ({ ...prev, scheduledDateTime: e.target.value }))}
+                min={new Date().toISOString().slice(0, 16)}
+              />
+            </div>
+            <div className="form-group">
+              <label>Duration (minutes):</label>
+              <select
+                value={bookingData.durationMinutes}
+                onChange={(e) => setBookingData(prev => ({ ...prev, durationMinutes: parseInt(e.target.value) }))}
+              >
+                <option value={30}>30 minutes</option>
+                <option value={60}>1 hour</option>
+                <option value={90}>1.5 hours</option>
+                <option value={120}>2 hours</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Session Type:</label>
+              <select
+                value={bookingData.sessionType}
+                onChange={(e) => setBookingData(prev => ({ ...prev, sessionType: e.target.value }))}
+              >
+                <option value="VIDEO_CALL">Video Call</option>
+                <option value="CHAT">Chat</option>
+                <option value="EMAIL">Email</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Notes (optional):</label>
+              <textarea
+                value={bookingData.notes}
+                onChange={(e) => setBookingData(prev => ({ ...prev, notes: e.target.value }))}
+                placeholder="Any specific topics or questions you'd like to discuss..."
+                rows={3}
+              />
+            </div>
+          </div>
+          <div className="modal-actions">
+            <button 
+              className="btn btn-secondary"
+              onClick={() => setShowBookingModal(false)}
+            >
+              Cancel
+            </button>
+            <button 
+              className="btn btn-primary"
+              onClick={handleBookingSubmit}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Booking...' : 'Book Session'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="dashboard-container">
@@ -327,6 +552,12 @@ const MenteeDashboard = ({ userData, onLogout }) => {
               🔍 Find Mentors
             </button>
             <button 
+              className={`btn btn-secondary ${currentView === 'sessions' ? 'active' : ''}`}
+              onClick={() => setCurrentView('sessions')}
+            >
+              📅 My Sessions
+            </button>
+            <button 
               className={`btn btn-secondary ${currentView === 'video-call' ? 'active' : ''}`}
               onClick={() => setCurrentView('video-call')}
             >
@@ -339,7 +570,8 @@ const MenteeDashboard = ({ userData, onLogout }) => {
         </div>
       </div>
 
-      {currentView === 'mentors' ? renderMentorListing() : renderVideoCall()}
+      {currentView === 'mentors' ? renderMentorListing() : currentView === 'sessions' ? renderSessions() : renderVideoCall()}
+      {renderBookingModal()}
     </div>
   );
 };
