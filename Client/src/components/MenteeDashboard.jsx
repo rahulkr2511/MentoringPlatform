@@ -19,8 +19,8 @@ const MenteeDashboard = ({ userData, onLogout }) => {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [bookingData, setBookingData] = useState({
     scheduledDateTime: '',
-    durationMinutes: 60,
-    sessionType: 'VIDEO_CALL',
+    durationMinutes: '',
+    sessionType: '',
     notes: ''
   });
   const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
@@ -141,22 +141,26 @@ const MenteeDashboard = ({ userData, onLogout }) => {
   const handleBookSession = (mentor) => {
     setSelectedMentor(mentor);
     setShowBookingModal(true);
-    // Set default date to tomorrow
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    setSelectedDate(tomorrow.toISOString().split('T')[0]);
+    // Reset all booking data to empty/default values
+    setSelectedDate('');
+    setBookingData({
+      scheduledDateTime: '',
+      durationMinutes: '',
+      sessionType: '',
+      notes: ''
+    });
   };
 
   const fetchAvailableTimeSlots = async () => {
-    if (!selectedMentor || !selectedDate) return;
+    if (!selectedMentor) return;
 
     setIsLoadingSlots(true);
     try {
       const request = {
         mentorId: selectedMentor.id,
-        startDate: selectedDate,
-        endDate: selectedDate, // For now, just get slots for the selected date
-        durationMinutes: bookingData.durationMinutes
+        startDate: selectedDate || new Date().toISOString().split('T')[0], // Use today if no date selected
+        endDate: selectedDate || new Date().toISOString().split('T')[0],
+        durationMinutes: bookingData.durationMinutes || 60 // Use 60 as default if not selected
       };
 
       const response = await SessionService.getAvailableTimeSlots(request);
@@ -178,8 +182,8 @@ const MenteeDashboard = ({ userData, onLogout }) => {
     setSelectedDate(date);
     setBookingData(prev => ({ ...prev, scheduledDateTime: '' }));
     setAvailableTimeSlots([]);
-    // Auto-load slots when date changes
-    if (date && bookingData.durationMinutes) {
+    // Fetch slots when date is selected
+    if (date) {
       setTimeout(() => fetchAvailableTimeSlots(), 100);
     }
   };
@@ -187,8 +191,17 @@ const MenteeDashboard = ({ userData, onLogout }) => {
   const handleDurationChange = (duration) => {
     setBookingData(prev => ({ ...prev, durationMinutes: duration }));
     setAvailableTimeSlots([]);
-    // Auto-load slots when duration changes
-    if (selectedDate && duration) {
+    // Fetch slots when duration is selected
+    if (duration) {
+      setTimeout(() => fetchAvailableTimeSlots(), 100);
+    }
+  };
+
+  const handleSessionTypeChange = (sessionType) => {
+    setBookingData(prev => ({ ...prev, sessionType: sessionType }));
+    setAvailableTimeSlots([]);
+    // Fetch slots when session type is selected
+    if (sessionType) {
       setTimeout(() => fetchAvailableTimeSlots(), 100);
     }
   };
@@ -234,8 +247,8 @@ const MenteeDashboard = ({ userData, onLogout }) => {
         setShowBookingModal(false);
         setBookingData({
           scheduledDateTime: '',
-          durationMinutes: 60,
-          sessionType: 'VIDEO_CALL',
+          durationMinutes: '',
+          sessionType: '',
           notes: ''
         });
         // Refresh sessions if we're on the sessions view
@@ -551,7 +564,7 @@ const MenteeDashboard = ({ userData, onLogout }) => {
                   value={bookingData.durationMinutes}
                   onChange={(e) => handleDurationChange(parseInt(e.target.value))}
                 >
-                  <option value={30}>30 minutes</option>
+                  <option value="">Select duration</option>
                   <option value={60}>1 hour</option>
                   <option value={90}>1.5 hours</option>
                   <option value={120}>2 hours</option>
@@ -561,8 +574,9 @@ const MenteeDashboard = ({ userData, onLogout }) => {
                 <label>Session Type:</label>
                 <select
                   value={bookingData.sessionType}
-                  onChange={(e) => setBookingData(prev => ({ ...prev, sessionType: e.target.value }))}
+                  onChange={(e) => handleSessionTypeChange(e.target.value)}
                 >
+                  <option value="">Select session type</option>
                   <option value="VIDEO_CALL">Video Call</option>
                   <option value="CHAT">Chat</option>
                   <option value="EMAIL">Email</option>
@@ -639,7 +653,7 @@ const MenteeDashboard = ({ userData, onLogout }) => {
             <button 
               className="btn btn-primary"
               onClick={handleBookingSubmit}
-              disabled={isLoading || !bookingData.scheduledDateTime}
+              disabled={isLoading || !selectedDate || !bookingData.durationMinutes || !bookingData.sessionType}
             >
               {isLoading ? 'Booking...' : 'Book Session'}
             </button>
