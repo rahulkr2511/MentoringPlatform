@@ -1,21 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { AuthService, SessionService } from '../services/Services.ts';
+import { AuthService, SessionService, ProfileService } from '../services/Services.ts';
 import '../styles/Dashboard.css';
 
 const MentorDashboard = ({ userData, onLogout }) => {
   const [user, setUser] = useState(userData || null);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentView, setCurrentView] = useState('sessions'); // 'sessions', 'video-call'
+  const [currentView, setCurrentView] = useState('sessions'); // 'sessions', 'video-call', 'profile'
   const [upcomingSessions, setUpcomingSessions] = useState([]);
   const [sessionHistory, setSessionHistory] = useState([]);
   const [videoCallData, setVideoCallData] = useState({
     roomId: null,
     isInCall: false
   });
+  
+  // Profile state
+  const [profile, setProfile] = useState({
+    name: '',
+    expertise: '',
+    availability: '',
+    hourlyRate: 0,
+    description: ''
+  });
+  const [isProfileLoading, setIsProfileLoading] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileErrors, setProfileErrors] = useState({});
 
   useEffect(() => {
     if (currentView === 'sessions') {
       fetchSessions();
+    } else if (currentView === 'profile') {
+      fetchProfile();
     }
   }, [currentView]);
 
@@ -103,6 +117,112 @@ const MentorDashboard = ({ userData, onLogout }) => {
     const roomId = `session_${session.id}_${Date.now()}`;
     setVideoCallData({ roomId, isInCall: true });
     setCurrentView('video-call');
+  };
+
+  // Profile management functions
+  const fetchProfile = async () => {
+    setIsProfileLoading(true);
+    try {
+      const response = await ProfileService.getProfile();
+      if (response.success && response.data) {
+        setProfile({
+          name: response.data.name || '',
+          expertise: response.data.expertise || '',
+          availability: response.data.availability || '',
+          hourlyRate: response.data.hourlyRate || 0,
+          description: response.data.description || ''
+        });
+      } else {
+        console.error('Failed to fetch profile:', response.error);
+        // Initialize with empty values if no profile exists
+        setProfile({
+          name: '',
+          expertise: '',
+          availability: '',
+          hourlyRate: 0,
+          description: ''
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      setProfile({
+        name: '',
+        expertise: '',
+        availability: '',
+        hourlyRate: 0,
+        description: ''
+      });
+    } finally {
+      setIsProfileLoading(false);
+    }
+  };
+
+  const handleProfileChange = (field, value) => {
+    setProfile(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    
+    // Clear field-specific error when user starts typing
+    if (profileErrors[field]) {
+      setProfileErrors(prev => ({
+        ...prev,
+        [field]: ''
+      }));
+    }
+  };
+
+  const validateProfile = () => {
+    const errors = {};
+    
+    if (!profile.name.trim()) {
+      errors.name = 'Name is required';
+    }
+    
+    if (!profile.expertise.trim()) {
+      errors.expertise = 'Expertise is required';
+    }
+    
+    if (!profile.availability.trim()) {
+      errors.availability = 'Availability is required';
+    }
+    
+    if (profile.hourlyRate <= 0) {
+      errors.hourlyRate = 'Hourly rate must be greater than 0';
+    }
+    
+    if (!profile.description.trim()) {
+      errors.description = 'Description is required';
+    }
+    
+    setProfileErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleProfileSubmit = async () => {
+    if (!validateProfile()) {
+      return;
+    }
+
+    setIsProfileLoading(true);
+    try {
+      const response = await ProfileService.updateProfile(profile);
+      if (response.success) {
+        // eslint-disable-next-line no-restricted-globals
+        alert('Profile updated successfully!');
+        setShowProfileModal(false);
+        setProfileErrors({});
+      } else {
+        // eslint-disable-next-line no-restricted-globals
+        alert('Failed to update profile: ' + response.error);
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      // eslint-disable-next-line no-restricted-globals
+      alert('Failed to update profile. Please try again.');
+    } finally {
+      setIsProfileLoading(false);
+    }
   };
 
   const renderSessions = () => (
@@ -247,6 +367,36 @@ const MentorDashboard = ({ userData, onLogout }) => {
     </div>
   );
 
+  const renderProfile = () => (
+    <div className="dashboard-content">
+      <div className="dashboard-card">
+        <h3>Profile Management</h3>
+        <p>Update your mentor profile to help mentees find you and understand your expertise.</p>
+        <button 
+          className="btn btn-primary"
+          onClick={() => {
+            fetchProfile();
+            setShowProfileModal(true);
+          }}
+        >
+          Edit Profile
+        </button>
+      </div>
+      
+      {/* Current Profile Display */}
+      <div className="profile-display">
+        <h4>Current Profile</h4>
+        <div className="profile-info">
+          <p><strong>Name:</strong> {profile.name || 'Not set'}</p>
+          <p><strong>Expertise:</strong> {profile.expertise || 'Not set'}</p>
+          <p><strong>Availability:</strong> {profile.availability || 'Not set'}</p>
+          <p><strong>Hourly Rate:</strong> ${profile.hourlyRate || 'Not set'}</p>
+          <p><strong>Description:</strong> {profile.description || 'Not set'}</p>
+        </div>
+      </div>
+    </div>
+  );
+
   if (isLoading) {
     return (
       <div className="dashboard-container">
@@ -274,6 +424,12 @@ const MentorDashboard = ({ userData, onLogout }) => {
               📅 Manage Sessions
             </button>
             <button 
+              className={`btn btn-secondary ${currentView === 'profile' ? 'active' : ''}`}
+              onClick={() => setCurrentView('profile')}
+            >
+              👤 Profile
+            </button>
+            <button 
               className={`btn btn-secondary ${currentView === 'video-call' ? 'active' : ''}`}
               onClick={() => setCurrentView('video-call')}
             >
@@ -286,7 +442,108 @@ const MentorDashboard = ({ userData, onLogout }) => {
         </div>
       </div>
 
-      {currentView === 'sessions' ? renderSessions() : renderVideoCall()}
+      {currentView === 'sessions' ? renderSessions() : currentView === 'video-call' ? renderVideoCall() : renderProfile()}
+      
+      {/* Profile Modal */}
+      {showProfileModal && (
+        <div className="modal-overlay">
+          <div className="profile-modal">
+            <div className="modal-header">
+              <h3>Edit Profile</h3>
+              <button 
+                className="modal-close"
+                onClick={() => setShowProfileModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-content">
+              <div className="form-group">
+                <label>Full Name:</label>
+                <input
+                  type="text"
+                  value={profile.name}
+                  onChange={(e) => handleProfileChange('name', e.target.value)}
+                  className={profileErrors.name ? 'error' : ''}
+                  placeholder="Enter your full name"
+                  disabled={isProfileLoading}
+                />
+                {profileErrors.name && <span className="error-message">{profileErrors.name}</span>}
+              </div>
+              
+              <div className="form-group">
+                <label>Expertise:</label>
+                <input
+                  type="text"
+                  value={profile.expertise}
+                  onChange={(e) => handleProfileChange('expertise', e.target.value)}
+                  className={profileErrors.expertise ? 'error' : ''}
+                  placeholder="e.g., Software Development, Data Science"
+                  disabled={isProfileLoading}
+                />
+                {profileErrors.expertise && <span className="error-message">{profileErrors.expertise}</span>}
+              </div>
+              
+              <div className="form-group">
+                <label>Availability:</label>
+                <input
+                  type="text"
+                  value={profile.availability}
+                  onChange={(e) => handleProfileChange('availability', e.target.value)}
+                  className={profileErrors.availability ? 'error' : ''}
+                  placeholder="e.g., Weekdays 9 AM - 5 PM, Weekends 10 AM - 4 PM"
+                  disabled={isProfileLoading}
+                />
+                {profileErrors.availability && <span className="error-message">{profileErrors.availability}</span>}
+              </div>
+              
+              <div className="form-group">
+                <label>Hourly Rate ($):</label>
+                <input
+                  type="number"
+                  value={profile.hourlyRate}
+                  onChange={(e) => handleProfileChange('hourlyRate', parseFloat(e.target.value) || 0)}
+                  className={profileErrors.hourlyRate ? 'error' : ''}
+                  placeholder="50"
+                  min="0"
+                  step="0.01"
+                  disabled={isProfileLoading}
+                />
+                {profileErrors.hourlyRate && <span className="error-message">{profileErrors.hourlyRate}</span>}
+              </div>
+              
+              <div className="form-group">
+                <label>Description:</label>
+                <textarea
+                  value={profile.description}
+                  onChange={(e) => handleProfileChange('description', e.target.value)}
+                  className={profileErrors.description ? 'error' : ''}
+                  placeholder="Tell mentees about your experience, background, and what you can help them with..."
+                  rows={4}
+                  disabled={isProfileLoading}
+                />
+                {profileErrors.description && <span className="error-message">{profileErrors.description}</span>}
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button 
+                className="btn btn-secondary"
+                onClick={() => setShowProfileModal(false)}
+                disabled={isProfileLoading}
+              >
+                Cancel
+              </button>
+              <button 
+                className="btn btn-primary"
+                onClick={handleProfileSubmit}
+                disabled={isProfileLoading}
+              >
+                {isProfileLoading ? 'Updating...' : 'Update Profile'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -99,6 +99,21 @@ interface SessionResponse {
   updatedAt: string;
 }
 
+// Availability types
+interface AvailabilitySlot {
+  startTime: string; // ISO string
+  endTime: string; // ISO string
+  available: boolean;
+  formattedTime: string;
+}
+
+interface MentorAvailabilityRequest {
+  mentorId: number;
+  startDate: string; // YYYY-MM-DD format
+  endDate: string; // YYYY-MM-DD format
+  durationMinutes?: number;
+}
+
 // Error types
 interface ValidationErrors {
   [key: string]: string;
@@ -360,6 +375,43 @@ export const SessionService = {
 
     return apiCall<SessionResponse>(`/sessions/${sessionId}/cancel`, {
       method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  },
+
+  // Get available time slots for a mentor
+  getAvailableTimeSlots: async (request: MentorAvailabilityRequest): Promise<ApiResponse<AvailabilitySlot[]>> => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return {
+        success: false,
+        error: 'No authentication token found',
+      };
+    }
+
+    return apiCall<AvailabilitySlot[]>('/sessions/availability', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(request),
+    });
+  },
+
+  // Get mentor availability summary
+  getMentorAvailabilitySummary: async (mentorId: number): Promise<ApiResponse<string>> => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return {
+        success: false,
+        error: 'No authentication token found',
+      };
+    }
+
+    return apiCall<string>(`/sessions/availability/${mentorId}/summary`, {
+      method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
       },

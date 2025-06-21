@@ -23,6 +23,9 @@ const MenteeDashboard = ({ userData, onLogout }) => {
     sessionType: 'VIDEO_CALL',
     notes: ''
   });
+  const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+  const [selectedDate, setSelectedDate] = useState('');
   const [videoCallData, setVideoCallData] = useState({
     roomId: null,
     isInCall: false
@@ -138,10 +141,78 @@ const MenteeDashboard = ({ userData, onLogout }) => {
   const handleBookSession = (mentor) => {
     setSelectedMentor(mentor);
     setShowBookingModal(true);
+    // Set default date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    setSelectedDate(tomorrow.toISOString().split('T')[0]);
+  };
+
+  const fetchAvailableTimeSlots = async () => {
+    if (!selectedMentor || !selectedDate) return;
+
+    setIsLoadingSlots(true);
+    try {
+      const request = {
+        mentorId: selectedMentor.id,
+        startDate: selectedDate,
+        endDate: selectedDate, // For now, just get slots for the selected date
+        durationMinutes: bookingData.durationMinutes
+      };
+
+      const response = await SessionService.getAvailableTimeSlots(request);
+      if (response.success && response.data) {
+        setAvailableTimeSlots(response.data);
+      } else {
+        console.error('Failed to fetch time slots:', response.error);
+        setAvailableTimeSlots([]);
+      }
+    } catch (error) {
+      console.error('Error fetching time slots:', error);
+      setAvailableTimeSlots([]);
+    } finally {
+      setIsLoadingSlots(false);
+    }
+  };
+
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+    setBookingData(prev => ({ ...prev, scheduledDateTime: '' }));
+    setAvailableTimeSlots([]);
+    // Auto-load slots when date changes
+    if (date && bookingData.durationMinutes) {
+      setTimeout(() => fetchAvailableTimeSlots(), 100);
+    }
+  };
+
+  const handleDurationChange = (duration) => {
+    setBookingData(prev => ({ ...prev, durationMinutes: duration }));
+    setAvailableTimeSlots([]);
+    // Auto-load slots when duration changes
+    if (selectedDate && duration) {
+      setTimeout(() => fetchAvailableTimeSlots(), 100);
+    }
+  };
+
+  // Helper function to check if a date is a weekend
+  const isWeekend = (dateString) => {
+    const date = new Date(dateString);
+    const day = date.getDay();
+    return day === 0 || day === 6; // Sunday = 0, Saturday = 6
+  };
+
+  // Helper function to get availability type for display
+  const getAvailabilityType = (dateString) => {
+    return isWeekend(dateString) ? 'Weekend' : 'Weekday';
+  };
+
+  // Handle slot selection (only selects the time, doesn't book automatically)
+  const handleSlotSelection = (slot) => {
+    setBookingData(prev => ({ ...prev, scheduledDateTime: slot.startTime }));
   };
 
   const handleBookingSubmit = async () => {
     if (!selectedMentor || !bookingData.scheduledDateTime) {
+      // eslint-disable-next-line no-restricted-globals
       alert('Please select a date and time for the session');
       return;
     }
@@ -158,6 +229,7 @@ const MenteeDashboard = ({ userData, onLogout }) => {
 
       const response = await SessionService.bookSession(bookingRequest);
       if (response.success) {
+        // eslint-disable-next-line no-restricted-globals
         alert('Session booked successfully!');
         setShowBookingModal(false);
         setBookingData({
@@ -171,10 +243,12 @@ const MenteeDashboard = ({ userData, onLogout }) => {
           fetchUpcomingSessions();
         }
       } else {
+        // eslint-disable-next-line no-restricted-globals
         alert('Failed to book session: ' + response.error);
       }
     } catch (error) {
       console.error('Error booking session:', error);
+      // eslint-disable-next-line no-restricted-globals
       alert('Failed to book session. Please try again.');
     } finally {
       setIsLoading(false);
@@ -217,6 +291,7 @@ const MenteeDashboard = ({ userData, onLogout }) => {
   }, [filters]);
 
   const handleCancelSession = async (sessionId) => {
+    // eslint-disable-next-line no-restricted-globals
     if (!confirm('Are you sure you want to cancel this session?')) {
       return;
     }
@@ -225,13 +300,16 @@ const MenteeDashboard = ({ userData, onLogout }) => {
     try {
       const response = await SessionService.cancelSession(sessionId);
       if (response.success) {
+        // eslint-disable-next-line no-restricted-globals
         alert('Session cancelled successfully!');
         fetchUpcomingSessions();
       } else {
+        // eslint-disable-next-line no-restricted-globals
         alert('Failed to cancel session: ' + response.error);
       }
     } catch (error) {
       console.error('Error cancelling session:', error);
+      // eslint-disable-next-line no-restricted-globals
       alert('Failed to cancel session. Please try again.');
     } finally {
       setIsLoading(false);
@@ -306,7 +384,11 @@ const MenteeDashboard = ({ userData, onLogout }) => {
               </div>
               <div className="mentor-info">
                 <p><strong>Expertise:</strong> {mentor.expertise}</p>
-                <p><strong>Availability:</strong> {mentor.availability}</p>
+                <p><strong>Availability:</strong> 
+                  <span className="availability-details">
+                    {mentor.availability || 'Not specified'}
+                  </span>
+                </p>
                 <p><strong>Rate:</strong> ${mentor.hourlyRate}/hour</p>
                 <p className="mentor-bio">{mentor.bio}</p>
               </div>
@@ -452,46 +534,99 @@ const MenteeDashboard = ({ userData, onLogout }) => {
             </button>
           </div>
           <div className="modal-content">
-            <div className="form-group">
-              <label>Date & Time:</label>
-              <input
-                type="datetime-local"
-                value={bookingData.scheduledDateTime}
-                onChange={(e) => setBookingData(prev => ({ ...prev, scheduledDateTime: e.target.value }))}
-                min={new Date().toISOString().slice(0, 16)}
-              />
+            {/* First Row: Date, Duration, Session Type */}
+            <div className="form-row">
+              <div className="form-group">
+                <label>Date:</label>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => handleDateChange(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+              <div className="form-group">
+                <label>Duration (minutes):</label>
+                <select
+                  value={bookingData.durationMinutes}
+                  onChange={(e) => handleDurationChange(parseInt(e.target.value))}
+                >
+                  <option value={30}>30 minutes</option>
+                  <option value={60}>1 hour</option>
+                  <option value={90}>1.5 hours</option>
+                  <option value={120}>2 hours</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Session Type:</label>
+                <select
+                  value={bookingData.sessionType}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, sessionType: e.target.value }))}
+                >
+                  <option value="VIDEO_CALL">Video Call</option>
+                  <option value="CHAT">Chat</option>
+                  <option value="EMAIL">Email</option>
+                </select>
+              </div>
             </div>
-            <div className="form-group">
-              <label>Duration (minutes):</label>
-              <select
-                value={bookingData.durationMinutes}
-                onChange={(e) => setBookingData(prev => ({ ...prev, durationMinutes: parseInt(e.target.value) }))}
-              >
-                <option value={30}>30 minutes</option>
-                <option value={60}>1 hour</option>
-                <option value={90}>1.5 hours</option>
-                <option value={120}>2 hours</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Session Type:</label>
-              <select
-                value={bookingData.sessionType}
-                onChange={(e) => setBookingData(prev => ({ ...prev, sessionType: e.target.value }))}
-              >
-                <option value="VIDEO_CALL">Video Call</option>
-                <option value="CHAT">Chat</option>
-                <option value="EMAIL">Email</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Notes (optional):</label>
-              <textarea
-                value={bookingData.notes}
-                onChange={(e) => setBookingData(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="Any specific topics or questions you'd like to discuss..."
-                rows={3}
-              />
+            
+            {/* Second Row: Available Time Slots */}
+            {selectedDate && (
+              <div className="form-row time-slots-row">
+                <div className="form-group full-width">
+                  <label>Available Time Slots ({getAvailabilityType(selectedDate)}):</label>
+                  <div className="availability-info">
+                    <p className="availability-type">
+                      📅 {getAvailabilityType(selectedDate)} Availability
+                      {isWeekend(selectedDate) ? ' (10:00 AM - 4:00 PM)' : ' (9:00 AM - 5:00 PM)'}
+                    </p>
+                  </div>
+                  
+                  {isLoadingSlots && (
+                    <div className="loading-slots">
+                      <div className="spinner-small"></div>
+                      <p>Loading available slots...</p>
+                    </div>
+                  )}
+                  
+                  {availableTimeSlots.length === 0 && !isLoadingSlots && (
+                    <p className="no-slots-message">
+                      No available slots found for this {getAvailabilityType(selectedDate).toLowerCase()}. 
+                      Try a different date or duration.
+                    </p>
+                  )}
+                  
+                  {!isLoadingSlots && availableTimeSlots.length > 0 && (
+                    <div className="time-slots-grid">
+                      {availableTimeSlots.map((slot, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          className={`time-slot-btn ${bookingData.scheduledDateTime === slot.startTime ? 'selected' : ''} ${!slot.available ? 'unavailable' : ''}`}
+                          onClick={() => slot.available ? handleSlotSelection(slot) : null}
+                          disabled={isLoading || !slot.available}
+                        >
+                          {slot.formattedTime}
+                          {!slot.available && <span className="unavailable-indicator">Booked</span>}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* Third Row: Notes */}
+            <div className="form-row notes-row">
+              <div className="form-group full-width">
+                <label>Notes (optional):</label>
+                <textarea
+                  value={bookingData.notes}
+                  onChange={(e) => setBookingData(prev => ({ ...prev, notes: e.target.value }))}
+                  placeholder="Any specific topics or questions you'd like to discuss..."
+                  rows={3}
+                />
+              </div>
             </div>
           </div>
           <div className="modal-actions">
@@ -504,7 +639,7 @@ const MenteeDashboard = ({ userData, onLogout }) => {
             <button 
               className="btn btn-primary"
               onClick={handleBookingSubmit}
-              disabled={isLoading}
+              disabled={isLoading || !bookingData.scheduledDateTime}
             >
               {isLoading ? 'Booking...' : 'Book Session'}
             </button>

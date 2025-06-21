@@ -34,11 +34,20 @@ public interface SessionRepository extends JpaRepository<Session, Long> {
            "AND s.status = :status ORDER BY s.scheduledDateTime DESC")
     List<Session> findSessionsByUserIdAndStatus(@Param("userId") Long userId, @Param("status") Session.SessionStatus status);
     
-    // Find sessions for a mentor in a time range
+    // Find sessions for a mentor in a time range (for conflict detection)
     @Query("SELECT s FROM Session s WHERE s.mentor.id = :mentorId " +
-           "AND s.status IN ('PENDING', 'CONFIRMED') " +
-           "AND s.scheduledDateTime BETWEEN :startTime AND :endTime")
+           "AND s.scheduledDateTime BETWEEN :startTime AND :endTime " +
+           "ORDER BY s.scheduledDateTime ASC")
     List<Session> findSessionsForMentorInTimeRange(@Param("mentorId") Long mentorId, 
                                                    @Param("startTime") LocalDateTime startTime, 
                                                    @Param("endTime") LocalDateTime endTime);
+    
+    // Find active sessions for a mentor in a time range (for availability display)
+    @Query("SELECT s FROM Session s WHERE s.mentor.id = :mentorId " +
+           "AND s.status IN ('PENDING', 'CONFIRMED') " +
+           "AND s.scheduledDateTime BETWEEN :startTime AND :endTime " +
+           "ORDER BY s.scheduledDateTime ASC")
+    List<Session> findActiveSessionsForMentorInTimeRange(@Param("mentorId") Long mentorId, 
+                                                         @Param("startTime") LocalDateTime startTime, 
+                                                         @Param("endTime") LocalDateTime endTime);
 } 

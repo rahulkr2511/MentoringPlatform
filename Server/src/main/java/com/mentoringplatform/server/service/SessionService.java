@@ -6,6 +6,7 @@ import com.mentoringplatform.server.model.Session;
 import com.mentoringplatform.server.model.User;
 import com.mentoringplatform.server.repository.SessionRepository;
 import com.mentoringplatform.server.repository.UserRepository;
+import com.mentoringplatform.server.service.AvailabilityService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,10 +20,12 @@ public class SessionService {
 
     private final SessionRepository sessionRepository;
     private final UserRepository userRepository;
+    private final AvailabilityService availabilityService;
 
-    public SessionService(SessionRepository sessionRepository, UserRepository userRepository) {
+    public SessionService(SessionRepository sessionRepository, UserRepository userRepository, AvailabilityService availabilityService) {
         this.sessionRepository = sessionRepository;
         this.userRepository = userRepository;
+        this.availabilityService = availabilityService;
     }
 
     @Transactional
@@ -39,6 +42,9 @@ public class SessionService {
         if (!mentor.getRoles().contains("MENTOR")) {
             throw new RuntimeException("Selected user is not a mentor");
         }
+
+        // Initialize default availability if mentor doesn't have any
+        availabilityService.initializeDefaultAvailability(mentor.getId());
 
         // Check for conflicting sessions
         LocalDateTime endTime = request.getScheduledDateTime().plusMinutes(request.getDurationMinutes());

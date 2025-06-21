@@ -3,8 +3,11 @@ package com.mentoringplatform.server.controller;
 import com.mentoringplatform.server.dto.ApiResponse;
 import com.mentoringplatform.server.dto.SessionBookingRequest;
 import com.mentoringplatform.server.dto.SessionResponse;
+import com.mentoringplatform.server.dto.AvailabilitySlot;
+import com.mentoringplatform.server.dto.MentorAvailabilityRequest;
 import com.mentoringplatform.server.model.Session;
 import com.mentoringplatform.server.service.SessionService;
+import com.mentoringplatform.server.service.AvailabilityService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,9 +22,11 @@ import java.util.List;
 public class SessionController {
 
     private final SessionService sessionService;
+    private final AvailabilityService availabilityService;
 
-    public SessionController(SessionService sessionService) {
+    public SessionController(SessionService sessionService, AvailabilityService availabilityService) {
         this.sessionService = sessionService;
+        this.availabilityService = availabilityService;
     }
 
     @PostMapping("/book")
@@ -36,6 +41,31 @@ public class SessionController {
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error("Failed to book session: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/availability")
+    @PreAuthorize("hasRole('MENTEE')")
+    public ResponseEntity<ApiResponse<List<AvailabilitySlot>>> getAvailableTimeSlots(
+            @Valid @RequestBody MentorAvailabilityRequest request) {
+        try {
+            List<AvailabilitySlot> slots = availabilityService.getAvailableTimeSlots(request);
+            return ResponseEntity.ok(ApiResponse.success(slots, "Available time slots retrieved successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Failed to retrieve available time slots: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/availability/{mentorId}/summary")
+    @PreAuthorize("hasRole('MENTEE')")
+    public ResponseEntity<ApiResponse<String>> getMentorAvailabilitySummary(@PathVariable Long mentorId) {
+        try {
+            String summary = availabilityService.getMentorAvailabilitySummary(mentorId);
+            return ResponseEntity.ok(ApiResponse.success(summary, "Mentor availability summary retrieved successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Failed to retrieve mentor availability summary: " + e.getMessage()));
         }
     }
 

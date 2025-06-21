@@ -1,5 +1,7 @@
+com/mentoringplatform/server/service/AvailabilityService$3.class
 com/mentoringplatform/server/controller/ProfileController.class
 com/mentoringplatform/server/repository/SessionRepository.class
+com/mentoringplatform/server/model/Availability.class
 com/mentoringplatform/server/security/UserPrincipal.class
 com/mentoringplatform/server/exception/UserAlreadyExistsException.class
 com/mentoringplatform/server/ServerApplication.class
@@ -9,15 +11,20 @@ com/mentoringplatform/server/repository/UserRepository.class
 com/mentoringplatform/server/dto/AuthRequest.class
 com/mentoringplatform/server/service/MentorService.class
 com/mentoringplatform/server/dto/SignupResponse.class
+com/mentoringplatform/server/service/AvailabilityService.class
 com/mentoringplatform/server/service/SessionService.class
 com/mentoringplatform/server/dto/SessionResponse.class
 com/mentoringplatform/server/service/UserService.class
+com/mentoringplatform/server/service/AvailabilityService$1.class
 com/mentoringplatform/server/service/ProfileService.class
+com/mentoringplatform/server/dto/MentorAvailabilityRequest.class
 com/mentoringplatform/server/dto/AuthResponse.class
 com/mentoringplatform/server/controller/AuthController.class
 com/mentoringplatform/server/security/JwtAuthenticationFilter.class
+com/mentoringplatform/server/service/AvailabilityService$2.class
 com/mentoringplatform/server/model/Session$SessionStatus.class
 com/mentoringplatform/server/dto/ProfileResponse.class
+com/mentoringplatform/server/dto/AvailabilitySlot.class
 com/mentoringplatform/server/dto/ApiResponse.class
 com/mentoringplatform/server/controller/MenteeDashboardController.class
 com/mentoringplatform/server/exception/GlobalExceptionHandler.class
@@ -28,3 +35,4 @@ com/mentoringplatform/server/dto/SessionBookingRequest.class
 com/mentoringplatform/server/model/Session.class
 com/mentoringplatform/server/model/User.class
 com/mentoringplatform/server/controller/SessionController.class
+com/mentoringplatform/server/repository/AvailabilityRepository.class
