@@ -198,9 +198,8 @@
   color: #2c3e50;
   font-size: 1.8rem;
   font-weight: 700;
-  border-bottom: 3px solid #667eea;
-  padding-bottom: 15px;
   position: relative;
+  padding-bottom: 15px;
 }
 
 .dashboard-card h3::after {
@@ -397,14 +396,21 @@
 }
 
 .mentor-actions .btn {
-  flex: 1;
-  padding: 14px;
-  font-size: 1rem;
+  padding: 12px 20px;
+  font-size: 0.9rem;
   font-weight: 600;
-  border-radius: 12px;
+  border-radius: 8px;
   border: none;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
+  margin-right: 8px;
+  min-width: 100px;
+}
+
+.mentor-actions .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #6c757d;
 }
 
 /* Sessions and Requests */
@@ -928,4 +934,37 @@
   .chat-input {
     flex-direction: column;
   }
+}
+
+.no-mentors {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.no-mentors p {
+  font-size: 1.2rem;
+  color: #6c757d;
+  margin: 0;
+  font-weight: 500;
+}
+
+.mentor-count {
+  margin-bottom: 20px;
+}
+
+.mentor-count p {
+  margin: 0;
+  color: #6c757d;
+  font-size: 1rem;
+  font-weight: 500;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 } 

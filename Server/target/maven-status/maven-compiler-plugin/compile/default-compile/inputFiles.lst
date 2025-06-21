@@ -2,6 +2,7 @@
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/dto/SignupResponse.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/service/ProfileService.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/security/SecurityConfig.java
+/Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/service/MentorService.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/ServerApplication.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/security/JwtTokenProvider.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/model/User.java
@@ -14,7 +15,9 @@
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/dto/AuthResponse.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/exception/UserAlreadyExistsException.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/dto/SignupRequest.java
+/Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/controller/MenteeDashboardController.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/exception/GlobalExceptionHandler.java
+/Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/dto/MentorDetailsResponse.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/repository/UserRepository.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/security/UserPrincipal.java
 /Users/rahulkr/Documents/MentoringPlatform/MentoringPlatform/Server/src/main/java/com/mentoringplatform/server/security/JwtAuthenticationFilter.java

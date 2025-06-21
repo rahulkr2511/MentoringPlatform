@@ -50,6 +50,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/monitoringPlatform/auth/**").permitAll()
                 .requestMatchers("/monitoringPlatform/mentor/profile/**").authenticated()
+                .requestMatchers("/monitoringPlatform/mentee/**").authenticated()
                 .requestMatchers("/h2-console/**").permitAll()
                 .anyRequest().authenticated()
             )

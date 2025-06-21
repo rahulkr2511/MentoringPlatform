@@ -60,6 +60,19 @@ interface ProfileResponseData {
   email: string;
 }
 
+// Mentor types
+interface MentorDetailsResponse {
+  id: number;
+  username: string;
+  email: string;
+  name: string;
+  expertise: string;
+  availability: string;
+  hourlyRate: number;
+  description: string;
+  enabled: boolean;
+}
+
 // Error types
 interface ValidationErrors {
   [key: string]: string;
@@ -195,6 +208,45 @@ export const ProfileService = {
   },
 };
 
+// Mentor Services
+export const MentorService = {
+  // Get all available mentors (with profiles)
+  getAvailableMentors: async (): Promise<ApiResponse<MentorDetailsResponse[]>> => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return {
+        success: false,
+        error: 'No authentication token found',
+      };
+    }
+
+    return apiCall<MentorDetailsResponse[]>('/mentee/mentors', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  },
+
+  // Get all mentors (including those without profiles)
+  getAllMentors: async (): Promise<ApiResponse<MentorDetailsResponse[]>> => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return {
+        success: false,
+        error: 'No authentication token found',
+      };
+    }
+
+    return apiCall<MentorDetailsResponse[]>('/mentee/mentors/all', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  },
+};
+
 // Error handling utilities
 export const ErrorHandler = {
   // Get user-friendly error message based on error code
@@ -222,5 +274,6 @@ export const ErrorHandler = {
 export default {
   AuthService,
   ProfileService,
+  MentorService,
   ErrorHandler,
 }; 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AuthService } from '../services/Services.ts';
+import { AuthService, MentorService } from '../services/Services.ts';
 import '../styles/Dashboard.css';
 
 const MenteeDashboard = ({ userData, onLogout }) => {
@@ -13,10 +13,13 @@ const MenteeDashboard = ({ userData, onLogout }) => {
     availability: '',
     rating: ''
   });
+  const [filteredMentors, setFilteredMentors] = useState([]);
+  const [isFiltering, setIsFiltering] = useState(false);
   const [videoCallData, setVideoCallData] = useState({
     roomId: null,
     isInCall: false
   });
+  const [debouncedFilters, setDebouncedFilters] = useState(filters);
 
   useEffect(() => {
     if (!user && !userData) {
@@ -33,7 +36,7 @@ const MenteeDashboard = ({ userData, onLogout }) => {
     if (currentView === 'mentors') {
       fetchMentors();
     }
-  }, [currentView, filters]);
+  }, [currentView]);
 
   const fetchCurrentUser = async () => {
     setIsLoading(true);
@@ -62,40 +65,37 @@ const MenteeDashboard = ({ userData, onLogout }) => {
   };
 
   const fetchMentors = async () => {
-    // Mock data for now - replace with actual API call
-    const mockMentors = [
-      {
-        id: 1,
-        username: 'john_mentor',
-        name: 'John Smith',
-        expertise: 'Software Development',
-        rating: 4.8,
-        availability: 'Weekdays 6-8 PM',
-        bio: 'Senior software developer with 10+ years of experience in React, Node.js, and cloud technologies.',
-        hourlyRate: 50
-      },
-      {
-        id: 2,
-        username: 'sarah_mentor',
-        name: 'Sarah Johnson',
-        expertise: 'Data Science',
-        rating: 4.9,
-        availability: 'Weekends 2-6 PM',
-        bio: 'Data scientist specializing in machine learning, Python, and statistical analysis.',
-        hourlyRate: 60
-      },
-      {
-        id: 3,
-        username: 'mike_mentor',
-        name: 'Mike Chen',
-        expertise: 'Product Management',
-        rating: 4.7,
-        availability: 'Weekdays 7-9 PM',
-        bio: 'Product manager with experience in agile methodologies and user experience design.',
-        hourlyRate: 45
+    setIsLoading(true);
+    try {
+      const response = await MentorService.getAllMentors();
+      if (response.success && response.data) {
+        // Transform the API response to match the expected format
+        const transformedMentors = response.data.map(mentor => ({
+          id: mentor.id,
+          username: mentor.username,
+          name: mentor.name || mentor.username, // Use username as fallback if name is null
+          expertise: mentor.expertise || 'Not specified',
+          rating: 4.5, // Default rating since it's not in the API response yet
+          availability: mentor.availability || 'Not specified',
+          bio: mentor.description || 'No description available',
+          hourlyRate: mentor.hourlyRate || 0,
+          email: mentor.email,
+          enabled: mentor.enabled
+        }));
+        setMentors(transformedMentors);
+        setFilteredMentors(transformedMentors);
+      } else {
+        console.error('Failed to fetch mentors:', response.error);
+        setMentors([]);
+        setFilteredMentors([]);
       }
-    ];
-    setMentors(mockMentors);
+    } catch (error) {
+      console.error('Error fetching mentors:', error);
+      setMentors([]);
+      setFilteredMentors([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleLogout = () => {
@@ -122,23 +122,41 @@ const MenteeDashboard = ({ userData, onLogout }) => {
     }));
   };
 
-  const filteredMentors = mentors.filter(mentor => {
-    if (filters.expertise && !mentor.expertise.toLowerCase().includes(filters.expertise.toLowerCase())) {
-      return false;
-    }
-    if (filters.availability && !mentor.availability.toLowerCase().includes(filters.availability.toLowerCase())) {
-      return false;
-    }
-    if (filters.rating && mentor.rating < parseFloat(filters.rating)) {
-      return false;
-    }
-    return true;
-  });
+  // Apply filters to mentors whenever filters or mentors change
+  useEffect(() => {
+    setIsFiltering(true);
+    const filtered = mentors.filter(mentor => {
+      if (debouncedFilters.expertise && !mentor.expertise.toLowerCase().includes(debouncedFilters.expertise.toLowerCase())) {
+        return false;
+      }
+      if (debouncedFilters.availability && !mentor.availability.toLowerCase().includes(debouncedFilters.availability.toLowerCase())) {
+        return false;
+      }
+      if (debouncedFilters.rating && mentor.rating < parseFloat(debouncedFilters.rating)) {
+        return false;
+      }
+      return true;
+    });
+    setFilteredMentors(filtered);
+    setIsFiltering(false);
+  }, [debouncedFilters, mentors]);
+
+  // Debounce filter changes
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedFilters(filters);
+    }, 300); // 300ms delay
+
+    return () => clearTimeout(timer);
+  }, [filters]);
 
   const renderMentorListing = () => (
     <div className="dashboard-content">
       <div className="dashboard-card">
         <h3>Find Your Mentor</h3>
+        <div className="mentor-count">
+          <p>Found {filteredMentors.length} mentor{filteredMentors.length !== 1 ? 's' : ''}</p>
+        </div>
         <div className="filters-section">
           <div className="filter-group">
             <label>Expertise:</label>
@@ -174,31 +192,42 @@ const MenteeDashboard = ({ userData, onLogout }) => {
       </div>
 
       <div className="mentors-grid">
-        {filteredMentors.map(mentor => (
-          <div key={mentor.id} className="mentor-card">
-            <div className="mentor-header">
-              <h4>{mentor.name}</h4>
-              <div className="mentor-rating">
-                ⭐ {mentor.rating}
+        {isFiltering ? (
+          <div className="no-mentors">
+            <p>Applying filters...</p>
+          </div>
+        ) : filteredMentors.length === 0 ? (
+          <div className="no-mentors">
+            <p>No mentors found matching your criteria.</p>
+          </div>
+        ) : (
+          filteredMentors.map(mentor => (
+            <div key={mentor.id} className="mentor-card">
+              <div className="mentor-header">
+                <h4>{mentor.name}</h4>
+                <div className="mentor-rating">
+                  ⭐ {mentor.rating}
+                </div>
+              </div>
+              <div className="mentor-info">
+                <p><strong>Expertise:</strong> {mentor.expertise}</p>
+                <p><strong>Availability:</strong> {mentor.availability}</p>
+                <p><strong>Rate:</strong> ${mentor.hourlyRate}/hour</p>
+                <p className="mentor-bio">{mentor.bio}</p>
+              </div>
+              <div className="mentor-actions">
+                <button 
+                  className="btn btn-primary"
+                  onClick={() => handleBookSession(mentor)}
+                  disabled={!mentor.enabled}
+                >
+                  {mentor.enabled ? 'Book Session' : 'Not Available'}
+                </button>
+                <button className="btn btn-secondary">View Profile</button>
               </div>
             </div>
-            <div className="mentor-info">
-              <p><strong>Expertise:</strong> {mentor.expertise}</p>
-              <p><strong>Availability:</strong> {mentor.availability}</p>
-              <p><strong>Rate:</strong> ${mentor.hourlyRate}/hour</p>
-              <p className="mentor-bio">{mentor.bio}</p>
-            </div>
-            <div className="mentor-actions">
-              <button 
-                className="btn btn-primary"
-                onClick={() => handleBookSession(mentor)}
-              >
-                Book Session
-              </button>
-              <button className="btn btn-secondary">View Profile</button>
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

@@ -8,8 +8,11 @@ com/mentoringplatform/server/dto/ProfileResponse.class
 com/mentoringplatform/server/dto/ApiResponse.class
 com/mentoringplatform/server/ServerApplication.class
 com/mentoringplatform/server/dto/ProfileRequest.class
+com/mentoringplatform/server/dto/MentorDetailsResponse.class
 com/mentoringplatform/server/repository/UserRepository.class
 com/mentoringplatform/server/dto/AuthRequest.class
+com/mentoringplatform/server/controller/MenteeDashboardController.class
+com/mentoringplatform/server/service/MentorService.class
 com/mentoringplatform/server/exception/GlobalExceptionHandler.class
 com/mentoringplatform/server/dto/SignupResponse.class
 com/mentoringplatform/server/security/JwtTokenProvider.class
