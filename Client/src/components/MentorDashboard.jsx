@@ -25,6 +25,41 @@ const MentorDashboard = ({ userData, onLogout }) => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profileErrors, setProfileErrors] = useState({});
 
+  // Fetch current user data
+  const fetchCurrentUser = async () => {
+    try {
+      // First check if user data is stored in localStorage
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+        return;
+      }
+
+      // If no stored user, fetch from API
+      const token = localStorage.getItem('token');
+      if (token) {
+        const response = await AuthService.getCurrentUser();
+        if (response.success && response.data) {
+          setUser(response.data);
+          // Store user data in localStorage for future use
+          localStorage.setItem('user', JSON.stringify(response.data));
+        } else {
+          console.error('Failed to fetch current user:', response.error);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+    }
+  };
+
+  useEffect(() => {
+    // Fetch current user on component mount if not provided
+    if (!user && !userData) {
+      fetchCurrentUser();
+    }
+  }, []);
+
   useEffect(() => {
     if (currentView === 'sessions') {
       fetchSessions();
@@ -387,11 +422,11 @@ const MentorDashboard = ({ userData, onLogout }) => {
       <div className="profile-display">
         <h4>Current Profile</h4>
         <div className="profile-info">
-          <p><strong>Name:</strong> {profile.name || 'Not set'}</p>
-          <p><strong>Expertise:</strong> {profile.expertise || 'Not set'}</p>
-          <p><strong>Availability:</strong> {profile.availability || 'Not set'}</p>
-          <p><strong>Hourly Rate:</strong> ${profile.hourlyRate || 'Not set'}</p>
-          <p><strong>Description:</strong> {profile.description || 'Not set'}</p>
+          <p><strong>Name</strong><span className="profile-value">{profile.name || 'Not set'}</span></p>
+          <p><strong>Expertise</strong><span className="profile-value">{profile.expertise || 'Not set'}</span></p>
+          <p><strong>Availability</strong><span className="profile-value">{profile.availability || 'Not set'}</span></p>
+          <p><strong>Hourly Rate</strong><span className="profile-value">${profile.hourlyRate || 'Not set'}</span></p>
+          <p><strong>Description</strong><span className="profile-value">{profile.description || 'Not set'}</span></p>
         </div>
       </div>
     </div>
@@ -413,7 +448,7 @@ const MentorDashboard = ({ userData, onLogout }) => {
       <div className="dashboard-header">
         <div className="dashboard-title">
           <h2>Mentor Dashboard</h2>
-          <p>Welcome back, {user?.name || 'Mentor'}! 👨‍🏫</p>
+          <p>Welcome back, {user?.username || 'Mentor'}!</p>
         </div>
         <div className="dashboard-actions">
           <div className="action-buttons">
