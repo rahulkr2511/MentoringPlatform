@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AuthService, MentorService, SessionService } from '../services/Services.ts';
 import VideoCall from './VideoCall';
 import Chat from './Chat';
+import { useNotificationContext } from '../contexts/NotificationContext';
 import '../styles/Dashboard.css';
 
 const MenteeDashboard = ({ userData, onLogout }) => {
@@ -34,6 +35,7 @@ const MenteeDashboard = ({ userData, onLogout }) => {
     currentSession: null
   });
   const [debouncedFilters, setDebouncedFilters] = useState(filters);
+  const { showSuccess, showError, showWarning } = useNotificationContext();
 
   useEffect(() => {
     if (!user && !userData) {
@@ -228,8 +230,7 @@ const MenteeDashboard = ({ userData, onLogout }) => {
 
   const handleBookingSubmit = async () => {
     if (!selectedMentor || !bookingData.scheduledDateTime) {
-      // eslint-disable-next-line no-restricted-globals
-      alert('Please select a date and time for the session');
+      showWarning('Please select a date and time for the session');
       return;
     }
 
@@ -245,8 +246,7 @@ const MenteeDashboard = ({ userData, onLogout }) => {
 
       const response = await SessionService.bookSession(bookingRequest);
       if (response.success) {
-        // eslint-disable-next-line no-restricted-globals
-        alert('Session booked successfully!');
+        showSuccess('Session booked successfully!');
         setShowBookingModal(false);
         setBookingData({
           scheduledDateTime: '',
@@ -259,13 +259,11 @@ const MenteeDashboard = ({ userData, onLogout }) => {
           fetchUpcomingSessions();
         }
       } else {
-        // eslint-disable-next-line no-restricted-globals
-        alert('Failed to book session: ' + response.error);
+        showError('Failed to book session: ' + response.error);
       }
     } catch (error) {
       console.error('Error booking session:', error);
-      // eslint-disable-next-line no-restricted-globals
-      alert('Failed to book session. Please try again.');
+      showError('Failed to book session. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -316,17 +314,14 @@ const MenteeDashboard = ({ userData, onLogout }) => {
     try {
       const response = await SessionService.cancelSession(sessionId);
       if (response.success) {
-        // eslint-disable-next-line no-restricted-globals
-        alert('Session cancelled successfully!');
+        showSuccess('Session cancelled successfully!');
         fetchUpcomingSessions();
       } else {
-        // eslint-disable-next-line no-restricted-globals
-        alert('Failed to cancel session: ' + response.error);
+        showError('Failed to cancel session: ' + response.error);
       }
     } catch (error) {
       console.error('Error cancelling session:', error);
-      // eslint-disable-next-line no-restricted-globals
-      alert('Failed to cancel session. Please try again.');
+      showError('Failed to cancel session. Please try again.');
     } finally {
       setIsLoading(false);
     }

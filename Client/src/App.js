@@ -4,10 +4,13 @@ import Home from './components/Home';
 import Login from './components/Login';
 import MenteeDashboard from './components/MenteeDashboard';
 import MentorDashboard from './components/MentorDashboard';
+import Toast from './components/Toast';
+import { NotificationProvider, useNotificationContext } from './contexts/NotificationContext';
 
-function App() {
+function AppContent() {
   const [currentView, setCurrentView] = useState('home'); // 'home', 'login', or 'dashboard'
   const [userData, setUserData] = useState(null);
+  const { notifications, removeNotification } = useNotificationContext();
 
   // Check for existing authentication on app load
   useEffect(() => {
@@ -67,6 +70,9 @@ function App() {
     <div className="App">
       {renderCurrentView()}
       
+      {/* Toast Notifications */}
+      <Toast notifications={notifications} onRemove={removeNotification} />
+      
       {/* Navigation buttons for testing - only show when not on dashboard */}
       {currentView !== 'dashboard' && (
         <div style={{
@@ -106,6 +112,14 @@ function App() {
         </div>
       )}
     </div>
+  );
+}
+
+function App() {
+  return (
+    <NotificationProvider>
+      <AppContent />
+    </NotificationProvider>
   );
 }
 

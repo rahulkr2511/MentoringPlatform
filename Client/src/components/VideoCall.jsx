@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { AuthService } from '../services/Services.ts';
 import { webRTCService } from '../services/WebRTCService.ts';
 import Chat from './Chat';
+import { useNotificationContext } from '../contexts/NotificationContext';
 import '../styles/Dashboard.css';
 
 const VideoCall = ({ 
@@ -16,6 +17,7 @@ const VideoCall = ({
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [localStream, setLocalStream] = useState(null);
   const [remoteStream, setRemoteStream] = useState(null);
+  const { showError } = useNotificationContext();
 
   
   const localVideoRef = useRef(null);
@@ -60,7 +62,7 @@ const VideoCall = ({
           
           // Show user-friendly error message
           const errorMessage = `Authentication Error: You are logged in as "${username}" but this session requires "${expectedUsername}". Please log out and log in with the correct account.`;
-          alert(errorMessage);
+          showError(errorMessage);
           
           // Clear authentication and redirect to login
           AuthService.logout();

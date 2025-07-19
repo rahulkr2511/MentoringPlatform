@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AuthService, SessionService, ProfileService } from '../services/Services.ts';
 import VideoCall from './VideoCall';
 import Chat from './Chat';
+import { useNotificationContext } from '../contexts/NotificationContext';
 import '../styles/Dashboard.css';
 
 const MentorDashboard = ({ userData, onLogout }) => {
@@ -15,6 +16,7 @@ const MentorDashboard = ({ userData, onLogout }) => {
     isInCall: false,
     currentSession: null
   });
+  const { showSuccess, showError } = useNotificationContext();
   
   // Profile state
   const [profile, setProfile] = useState({
@@ -115,14 +117,14 @@ const MentorDashboard = ({ userData, onLogout }) => {
     try {
       const response = await SessionService.updateSessionStatus(sessionId, status);
       if (response.success) {
-        alert(`Session ${status.toLowerCase()} successfully!`);
+        showSuccess(`Session ${status.toLowerCase()} successfully!`);
         fetchSessions();
       } else {
-        alert('Failed to update session status: ' + response.error);
+        showError('Failed to update session status: ' + response.error);
       }
     } catch (error) {
       console.error('Error updating session status:', error);
-      alert('Failed to update session status. Please try again.');
+      showError('Failed to update session status. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -138,14 +140,14 @@ const MentorDashboard = ({ userData, onLogout }) => {
     try {
       const response = await SessionService.cancelSession(sessionId);
       if (response.success) {
-        alert('Session cancelled successfully!');
+        showSuccess('Session cancelled successfully!');
         fetchSessions();
       } else {
-        alert('Failed to cancel session: ' + response.error);
+        showError('Failed to cancel session: ' + response.error);
       }
     } catch (error) {
       console.error('Error cancelling session:', error);
-      alert('Failed to cancel session. Please try again.');
+      showError('Failed to cancel session. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -251,18 +253,15 @@ const MentorDashboard = ({ userData, onLogout }) => {
     try {
       const response = await ProfileService.updateProfile(profile);
       if (response.success) {
-        // eslint-disable-next-line no-restricted-globals
-        alert('Profile updated successfully!');
+        showSuccess('Profile updated successfully!');
         setShowProfileModal(false);
         setProfileErrors({});
       } else {
-        // eslint-disable-next-line no-restricted-globals
-        alert('Failed to update profile: ' + response.error);
+        showError('Failed to update profile: ' + response.error);
       }
     } catch (error) {
       console.error('Error updating profile:', error);
-      // eslint-disable-next-line no-restricted-globals
-      alert('Failed to update profile. Please try again.');
+      showError('Failed to update profile. Please try again.');
     } finally {
       setIsProfileLoading(false);
     }

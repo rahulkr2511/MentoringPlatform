@@ -1,17 +1,13 @@
 import React, { useState } from 'react';
 import { AuthService, ErrorHandler } from '../services/Services.ts';
-import Toast from '../shared-components/Toast';
+import { useNotificationContext } from '../contexts/NotificationContext';
 import '../styles/Login.css';
 
 const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [toast, setToast] = useState({
-    isVisible: false,
-    message: '',
-    type: 'success'
-  });
+  const { showSuccess, showError } = useNotificationContext();
   
   const [loginData, setLoginData] = useState({
     username: '',
@@ -119,8 +115,8 @@ const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
         
         if (response.success) {
           // Store token and user data
-          localStorage.setItem('token', response.data.token);
-          localStorage.setItem('user', JSON.stringify({
+          sessionStorage.setItem('token', response.data.token);
+          sessionStorage.setItem('user', JSON.stringify({
             username: response.data.username,
             email: response.data.email,
             roles: response.data.roles
@@ -139,10 +135,10 @@ const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
         } else {
           // Handle error using the new error handling utilities
           const errorMessage = ErrorHandler.getErrorMessage(response.error, 'Login failed');
-          setErrors({ general: errorMessage });
+          showError(errorMessage);
         }
       } catch (error) {
-        setErrors({ general: 'Network error. Please check your connection and try again.' });
+        showError('Network error. Please check your connection and try again.');
       } finally {
         setIsLoading(false);
       }
@@ -177,13 +173,9 @@ const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
             role: 'MENTEE'
           });
           
-          // Show success toast with message from response
-          const toastMessage = response.message || 'Account created successfully! Please sign in to continue.';
-          setToast({
-            isVisible: true,
-            message: toastMessage,
-            type: 'success'
-          });
+          // Show success notification
+          const successMessage = response.message || 'Account created successfully! Please sign in to continue.';
+          showSuccess(successMessage);
           
           // Switch to login form
           setIsLogin(true);
@@ -203,10 +195,10 @@ const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
             errorMessage = ErrorHandler.getErrorMessage(response.error, 'Signup failed');
           }
           
-          setErrors({ general: errorMessage });
+          showError(errorMessage);
         }
       } catch (error) {
-        setErrors({ general: 'Network error. Please check your connection and try again.' });
+        showError('Network error. Please check your connection and try again.');
       } finally {
         setIsLoading(false);
       }
@@ -218,12 +210,7 @@ const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
     setErrors({});
   };
 
-  const handleToastClose = () => {
-    setToast(prev => ({
-      ...prev,
-      isVisible: false
-    }));
-  };
+
 
   return (
     <div className="login-container">
@@ -233,11 +220,7 @@ const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
           <p>{isLogin ? 'Sign in to your account' : 'Join our mentoring platform'}</p>
         </div>
 
-        {errors.general && (
-          <div className="error-message general-error">
-            {errors.general}
-          </div>
-        )}
+
 
         {isLogin ? (
           <form onSubmit={handleLoginSubmit} className="login-form">
@@ -369,13 +352,7 @@ const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
         </div>
       </div>
       
-      <Toast
-        message={toast.message}
-        type={toast.type}
-        isVisible={toast.isVisible}
-        onClose={handleToastClose}
-        duration={5000}
-      />
+
     </div>
   );
 };
