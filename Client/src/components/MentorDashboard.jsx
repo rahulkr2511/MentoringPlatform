@@ -12,7 +12,8 @@ const MentorDashboard = ({ userData, onLogout }) => {
   const [sessionHistory, setSessionHistory] = useState([]);
   const [videoCallData, setVideoCallData] = useState({
     roomId: null,
-    isInCall: false
+    isInCall: false,
+    currentSession: null
   });
   
   // Profile state
@@ -150,9 +151,13 @@ const MentorDashboard = ({ userData, onLogout }) => {
   };
 
   const handleJoinSession = (session) => {
-    // Generate a room ID for the video call
-    const roomId = `session_${session.id}_${Date.now()}`;
-    setVideoCallData({ roomId, isInCall: true });
+    // Use session ID as room ID to ensure both mentor and mentee join the same room
+    const roomId = `session_${session.id}`;
+    setVideoCallData({ 
+      roomId, 
+      isInCall: true, 
+      currentSession: session 
+    });
     setCurrentView('video-call');
   };
 
@@ -374,13 +379,14 @@ const MentorDashboard = ({ userData, onLogout }) => {
 
   const renderVideoCall = () => (
     <VideoCall 
-      selectedMentor={null}
+      selectedMentor={videoCallData.currentSession?.menteeName ? { name: videoCallData.currentSession.menteeName } : null}
       roomId={videoCallData.roomId}
       onEndCall={() => {
-        setVideoCallData({ roomId: null, isInCall: false });
+        setVideoCallData({ roomId: null, isInCall: false, currentSession: null });
         setCurrentView('sessions');
       }}
       isMentor={true}
+      sessionData={videoCallData.currentSession}
     />
   );
 
@@ -449,8 +455,9 @@ const MentorDashboard = ({ userData, onLogout }) => {
             <button 
               className={`btn btn-secondary ${currentView === 'video-call' ? 'active' : ''}`}
               onClick={() => setCurrentView('video-call')}
+              disabled={!videoCallData.isInCall}
             >
-              📹 Active Sessions
+              📹 Active Sessions {videoCallData.isInCall && '(1)'}
             </button>
             <button onClick={handleLogout} className="btn btn-logout">
               🚪 Logout

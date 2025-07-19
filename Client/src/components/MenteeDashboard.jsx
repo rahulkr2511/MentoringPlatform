@@ -30,7 +30,8 @@ const MenteeDashboard = ({ userData, onLogout }) => {
   const [selectedDate, setSelectedDate] = useState('');
   const [videoCallData, setVideoCallData] = useState({
     roomId: null,
-    isInCall: false
+    isInCall: false,
+    currentSession: null
   });
   const [debouncedFilters, setDebouncedFilters] = useState(filters);
 
@@ -332,9 +333,13 @@ const MenteeDashboard = ({ userData, onLogout }) => {
   };
 
   const handleJoinSession = (session) => {
-    // Generate a room ID for the video call
-    const roomId = `session_${session.id}_${Date.now()}`;
-    setVideoCallData({ roomId, isInCall: true });
+    // Use session ID as room ID to ensure both mentor and mentee join the same room
+    const roomId = `session_${session.id}`;
+    setVideoCallData({ 
+      roomId, 
+      isInCall: true, 
+      currentSession: session 
+    });
     setCurrentView('video-call');
   };
 
@@ -426,10 +431,14 @@ const MenteeDashboard = ({ userData, onLogout }) => {
 
   const renderVideoCall = () => (
     <VideoCall 
-      selectedMentor={selectedMentor}
+      selectedMentor={videoCallData.currentSession?.mentorName ? { name: videoCallData.currentSession.mentorName } : selectedMentor}
       roomId={videoCallData.roomId}
-      onEndCall={() => setCurrentView('mentors')}
+      onEndCall={() => {
+        setVideoCallData({ roomId: null, isInCall: false, currentSession: null });
+        setCurrentView('sessions');
+      }}
       isMentor={false}
+      sessionData={videoCallData.currentSession}
     />
   );
 
@@ -663,8 +672,9 @@ const MenteeDashboard = ({ userData, onLogout }) => {
             <button 
               className={`btn btn-secondary ${currentView === 'video-call' ? 'active' : ''}`}
               onClick={() => setCurrentView('video-call')}
+              disabled={!videoCallData.isInCall}
             >
-              📹 Active Sessions
+              📹 Active Sessions {videoCallData.isInCall && '(1)'}
             </button>
             <button onClick={handleLogout} className="btn btn-logout">
               🚪 Logout

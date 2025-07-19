@@ -1818,6 +1818,15 @@
 .session-actions .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  background-color: #e5e7eb;
+  color: #9ca3af;
+  border-color: #d1d5db;
+}
+
+.btn:disabled:hover {
+  background-color: #e5e7eb;
+  color: #9ca3af;
+  border-color: #d1d5db;
 }
 
 .no-sessions {
@@ -2524,6 +2533,8 @@
   animation: pulse 2s infinite;
   box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
 }
+
+
 
 .video-off-overlay {
   position: absolute;

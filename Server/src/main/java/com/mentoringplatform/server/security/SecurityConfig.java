@@ -52,6 +52,7 @@ public class SecurityConfig {
                 .requestMatchers("/monitoringPlatform/mentor/profile/**").authenticated()
                 .requestMatchers("/monitoringPlatform/mentee/**").authenticated()
                 .requestMatchers("/monitoringPlatform/sessions/**").authenticated()
+                .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .anyRequest().authenticated()
             )
