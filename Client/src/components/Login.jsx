@@ -115,8 +115,8 @@ const Login = ({ onLoginSuccess, onSwitchToSignin }) => {
         
         if (response.success) {
           // Store token and user data
-          sessionStorage.setItem('token', response.data.token);
-          sessionStorage.setItem('user', JSON.stringify({
+          localStorage.setItem('token', response.data.token);
+          localStorage.setItem('user', JSON.stringify({
             username: response.data.username,
             email: response.data.email,
             roles: response.data.roles
