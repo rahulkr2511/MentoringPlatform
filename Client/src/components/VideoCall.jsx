@@ -181,6 +181,14 @@ const VideoCall = ({
     }
   }, [remoteStream]);
 
+  // Handle video element reconnection when video is turned back on
+  useEffect(() => {
+    if (isVideoOn && localStream && localVideoRef.current) {
+      console.log('Reconnecting video element - video turned back on');
+      localVideoRef.current.srcObject = localStream;
+    }
+  }, [isVideoOn, localStream]);
+
   // Debug stream states
   useEffect(() => {
     console.log('Stream states updated:', {
@@ -202,12 +210,33 @@ const VideoCall = ({
   };
 
   const handleVideoToggle = () => {
+    console.log('Video toggle clicked. Current state:', { isVideoOn, hasLocalStream: !!localStream });
+    
     if (localStream) {
       const videoTrack = localStream.getVideoTracks()[0];
       if (videoTrack) {
-        videoTrack.enabled = !videoTrack.enabled;
-        setIsVideoOn(videoTrack.enabled);
+        const newEnabledState = !videoTrack.enabled;
+        console.log('Toggling video track from', videoTrack.enabled, 'to', newEnabledState);
+        
+        videoTrack.enabled = newEnabledState;
+        setIsVideoOn(newEnabledState);
+        
+        // If video is being turned back on, ensure video element is connected
+        if (newEnabledState && localVideoRef.current) {
+          console.log('Reconnecting video element after toggle');
+          // Small delay to ensure the video element is ready
+          setTimeout(() => {
+            if (localVideoRef.current) {
+              localVideoRef.current.srcObject = localStream;
+              console.log('Video element reconnected after delay');
+            }
+          }, 100);
+        }
+      } else {
+        console.warn('No video track found in local stream');
       }
+    } else {
+      console.warn('No local stream available for video toggle');
     }
   };
 
@@ -280,7 +309,7 @@ const VideoCall = ({
       <div className="video-call-content">
         <div className="video-streams">
           <div className="video-stream">
-            {localStream && isVideoOn ? (
+            {localStream ? (
               <video
                 ref={localVideoRef}
                 autoPlay
@@ -292,17 +321,20 @@ const VideoCall = ({
                   height: '100%',
                   objectFit: 'cover',
                   borderRadius: '8px',
-                  backgroundColor: '#000'
+                  backgroundColor: '#000',
+                  display: isVideoOn ? 'block' : 'none'
                 }}
                 onLoadedMetadata={() => console.log('Local video loaded metadata')}
                 onCanPlay={() => console.log('Local video can play')}
                 onError={(e) => console.error('Local video error:', e)}
               />
-            ) : (
+            ) : null}
+            
+            {(!localStream || !isVideoOn) && (
               <div className="video-placeholder">
                 <p>Your Video Stream</p>
                 <p>Camera and microphone access required</p>
-                {!isVideoOn && <div className="video-off-overlay">Camera Off</div>}
+                {!isVideoOn && localStream && <div className="video-off-overlay">Camera Off</div>}
                 {!localStream && <div className="no-stream">No local stream available</div>}
               </div>
             )}
