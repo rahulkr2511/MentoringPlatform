@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AuthService, MentorService, SessionService } from '../services/Services.ts';
+import VideoCall from './VideoCall';
+import Chat from './Chat';
 import '../styles/Dashboard.css';
 
 const MenteeDashboard = ({ userData, onLogout }) => {
@@ -423,60 +425,12 @@ const MenteeDashboard = ({ userData, onLogout }) => {
   );
 
   const renderVideoCall = () => (
-    <div className="video-call-container">
-      <div className="video-call-header">
-        <h3>Video Session with {selectedMentor?.name}</h3>
-        <button 
-          className="btn btn-secondary"
-          onClick={() => setCurrentView('mentors')}
-        >
-          End Call
-        </button>
-      </div>
-      
-      <div className="video-call-content">
-        <div className="video-streams">
-          <div className="video-stream">
-            <div className="video-placeholder">
-              <p>Your Video Stream</p>
-              <p>Camera and microphone access required</p>
-            </div>
-            <div className="video-controls">
-              <button className="btn btn-secondary">🎤</button>
-              <button className="btn btn-secondary">📹</button>
-              <button className="btn btn-secondary">📞</button>
-            </div>
-          </div>
-          
-          <div className="video-stream">
-            <div className="video-placeholder">
-              <p>Mentor Video Stream</p>
-              <p>Waiting for mentor to join...</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="chat-panel">
-          <div className="chat-header">
-            <h4>Chat</h4>
-          </div>
-          <div className="chat-messages">
-            <div className="chat-message">
-              <span className="message-sender">System:</span>
-              <span className="message-text">Session started. You can now chat with your mentor.</span>
-            </div>
-          </div>
-          <div className="chat-input">
-            <input 
-              type="text" 
-              placeholder="Type your message..."
-              className="chat-input-field"
-            />
-            <button className="btn btn-primary">Send</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <VideoCall 
+      selectedMentor={selectedMentor}
+      roomId={videoCallData.roomId}
+      onEndCall={() => setCurrentView('mentors')}
+      isMentor={false}
+    />
   );
 
   const renderSessions = () => (

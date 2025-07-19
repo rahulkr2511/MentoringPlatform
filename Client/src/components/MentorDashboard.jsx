@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AuthService, SessionService, ProfileService } from '../services/Services.ts';
+import VideoCall from './VideoCall';
+import Chat from './Chat';
 import '../styles/Dashboard.css';
 
 const MentorDashboard = ({ userData, onLogout }) => {
@@ -371,35 +373,15 @@ const MentorDashboard = ({ userData, onLogout }) => {
   );
 
   const renderVideoCall = () => (
-    <div className="dashboard-content">
-      <div className="dashboard-card">
-        <h3>Video Call Session</h3>
-        <div className="video-call-info">
-          <p><strong>Room ID:</strong> {videoCallData.roomId}</p>
-          <p><strong>Status:</strong> Active</p>
-        </div>
-        <div className="video-call-actions">
-          <button 
-            className="btn btn-danger"
-            onClick={() => {
-              setVideoCallData({ roomId: null, isInCall: false });
-              setCurrentView('sessions');
-            }}
-          >
-            End Call
-          </button>
-        </div>
-      </div>
-      <div className="video-call-placeholder">
-        <div className="video-container">
-          <div className="video-placeholder">
-            <h4>Video Call Interface</h4>
-            <p>Video call functionality would be integrated here</p>
-            <p>Room: {videoCallData.roomId}</p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <VideoCall 
+      selectedMentor={null}
+      roomId={videoCallData.roomId}
+      onEndCall={() => {
+        setVideoCallData({ roomId: null, isInCall: false });
+        setCurrentView('sessions');
+      }}
+      isMentor={true}
+    />
   );
 
   const renderProfile = () => (
