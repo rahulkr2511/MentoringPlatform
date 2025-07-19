@@ -282,13 +282,26 @@ const VideoCall = ({
 
 
 
+  // Debug logging for participant names
+  console.log('VideoCall component debug:', {
+    isMentor,
+    selectedMentor,
+    participantName: isMentor ? (selectedMentor?.name || "Mentee") : selectedMentor?.name,
+    sessionData: sessionData ? {
+      mentorUsername: sessionData.mentorUsername,
+      menteeUsername: sessionData.menteeUsername,
+      mentorName: sessionData.mentorName,
+      menteeName: sessionData.menteeName
+    } : null
+  });
+
   return (
     <div className="video-call-container">
       <div className="video-call-header">
         <div className="header-left">
           <h3>
             {isMentor 
-              ? `Video Session with Mentee` 
+              ? `Video Session with ${selectedMentor?.name || 'Mentee'}` 
               : `Video Session with ${selectedMentor?.name || 'Mentor'}`
             }
           </h3>
@@ -402,9 +415,11 @@ const VideoCall = ({
         
         <div className="chat-section">
           <Chat 
-            sessionId={roomId}
-            participantName={isMentor ? "Mentee" : selectedMentor?.name}
+            sessionId={sessionData?.id?.toString() || roomId}
+            participantName={isMentor ? (selectedMentor?.name || "Mentee") : selectedMentor?.name}
             isMentor={isMentor}
+            currentUsername={getCurrentUser()?.username || AuthService.getStoredUser()?.username}
+            sessionData={sessionData}
           />
         </div>
       </div>

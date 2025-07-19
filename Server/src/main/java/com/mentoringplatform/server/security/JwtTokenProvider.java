@@ -4,9 +4,14 @@ import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import java.security.Key;
 import java.util.Date;
@@ -63,5 +68,36 @@ public class JwtTokenProvider {
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
+    }
+
+    public Authentication getAuthentication(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        String username = claims.getSubject();
+        String roles = claims.get("roles", String.class);
+        
+        // Create authorities from roles
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        if (roles != null) {
+            for (String role : roles.split(",")) {
+                authorities.add(new SimpleGrantedAuthority(role));
+            }
+        }
+        
+        // Create a simple user principal for WebSocket authentication
+        UserPrincipal userPrincipal = new UserPrincipal(
+            1L, // Default ID for WebSocket
+            username,
+            username + "@websocket.local", // Default email
+            "", // No password needed for WebSocket
+            authorities,
+            true // Enabled
+        );
+        
+        return new UsernamePasswordAuthenticationToken(userPrincipal, token, authorities);
     }
 } 

@@ -129,6 +129,7 @@ const MentorDashboard = ({ userData, onLogout }) => {
   };
 
   const handleCancelSession = async (sessionId) => {
+    // eslint-disable-next-line no-restricted-globals
     if (!confirm('Are you sure you want to cancel this session?')) {
       return;
     }
@@ -377,18 +378,31 @@ const MentorDashboard = ({ userData, onLogout }) => {
     </div>
   );
 
-  const renderVideoCall = () => (
-    <VideoCall 
-      selectedMentor={videoCallData.currentSession?.menteeName ? { name: videoCallData.currentSession.menteeName } : null}
-      roomId={videoCallData.roomId}
-      onEndCall={() => {
-        setVideoCallData({ roomId: null, isInCall: false, currentSession: null });
-        setCurrentView('sessions');
-      }}
-      isMentor={true}
-      sessionData={videoCallData.currentSession}
-    />
-  );
+  const renderVideoCall = () => {
+    // Get mentee name from session data, with fallbacks
+    const menteeName = videoCallData.currentSession?.menteeName || 
+                      videoCallData.currentSession?.menteeUsername || 
+                      'Mentee';
+    
+    console.log('Mentor dashboard VideoCall debug:', {
+      session: videoCallData.currentSession,
+      menteeName,
+      roomId: videoCallData.roomId
+    });
+    
+    return (
+      <VideoCall 
+        selectedMentor={{ name: menteeName }}
+        roomId={videoCallData.roomId}
+        onEndCall={() => {
+          setVideoCallData({ roomId: null, isInCall: false, currentSession: null });
+          setCurrentView('sessions');
+        }}
+        isMentor={true}
+        sessionData={videoCallData.currentSession}
+      />
+    );
+  };
 
   const renderProfile = () => (
     <div className="dashboard-content">
