@@ -327,10 +327,12 @@ const MentorDashboard = ({ userData, onLogout }) => {
                   )}
                   {session.status === 'CONFIRMED' && (
                     <button 
-                      className="btn btn-primary"
+                      className={`btn btn-primary ${videoCallData.isInCall ? 'disabled' : ''}`}
                       onClick={() => handleJoinSession(session)}
+                      disabled={videoCallData.isInCall}
+                      title={videoCallData.isInCall ? 'You are currently in an active session. Please end the current session before joining another.' : 'Join this session'}
                     >
-                      Join Session
+                      {videoCallData.isInCall ? 'Session Active' : 'Join Session'}
                     </button>
                   )}
                   <button 
@@ -451,6 +453,12 @@ const MentorDashboard = ({ userData, onLogout }) => {
         <div className="dashboard-title">
           <h2>Mentor Dashboard</h2>
           <p>Welcome back, {user?.username || 'Mentor'}!</p>
+          {videoCallData.isInCall && (
+            <div className="active-session-indicator">
+              <span className="indicator-dot"></span>
+              <span className="indicator-text">Active Session in Progress</span>
+            </div>
+          )}
         </div>
         <div className="dashboard-actions">
           <div className="action-buttons">

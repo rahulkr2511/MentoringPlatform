@@ -474,11 +474,12 @@ const MenteeDashboard = ({ userData, onLogout }) => {
               </div>
               <div className="session-actions">
                 <button 
-                  className="btn btn-primary"
+                  className={`btn btn-primary ${videoCallData.isInCall ? 'disabled' : ''}`}
                   onClick={() => handleJoinSession(session)}
-                  disabled={session.status !== 'CONFIRMED'}
+                  disabled={session.status !== 'CONFIRMED' || videoCallData.isInCall}
+                  title={videoCallData.isInCall ? 'You are currently in an active session. Please end the current session before joining another.' : session.status !== 'CONFIRMED' ? 'Waiting for mentor confirmation' : 'Join this session'}
                 >
-                  {session.status === 'CONFIRMED' ? 'Join Session' : 'Waiting for Confirmation'}
+                  {videoCallData.isInCall ? 'Session Active' : session.status === 'CONFIRMED' ? 'Join Session' : 'Waiting for Confirmation'}
                 </button>
                 <button 
                   className="btn btn-secondary"
@@ -654,6 +655,12 @@ const MenteeDashboard = ({ userData, onLogout }) => {
         <div className="dashboard-title">
           <h1>🎓 Mentee Learning Hub</h1>
           <p>Welcome back, {user.username}! Ready to grow with expert guidance?</p>
+          {videoCallData.isInCall && (
+            <div className="active-session-indicator">
+              <span className="indicator-dot"></span>
+              <span className="indicator-text">Active Session in Progress</span>
+            </div>
+          )}
         </div>
         <div className="dashboard-actions">
           <div className="action-buttons">
