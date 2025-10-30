@@ -1,7 +1,7 @@
 import React from 'react';
 import '../styles/Home.css';
 
-const Home = () => {
+const Home = ({ onGetStarted }) => {
   return (
     <div className="home">
       <div className="home-container">
@@ -41,7 +41,7 @@ const Home = () => {
             <h2>Ready to Start Your Journey?</h2>
             <p>Join thousands of professionals who have transformed their careers</p>
             <div className="cta-buttons">
-              <button className="btn btn-primary">Get Started</button>
+              <button className="btn btn-primary" onClick={() => onGetStarted && onGetStarted()}>Get Started</button>
               <button className="btn btn-secondary">Learn More</button>
             </div>
           </div>

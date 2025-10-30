@@ -62,7 +62,7 @@ function AppContent() {
           />
         );
       default:
-        return <Home />;
+        return <Home onGetStarted={() => setCurrentView('login')} />;
     }
   };
 
