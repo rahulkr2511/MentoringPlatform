@@ -549,6 +549,113 @@ webRTCService.setOnRemoteStream((stream) => {
 await webRTCService.startCall(isMentor);
 ```
 
+### 5.3 Connection Resilience & Attempt Recreation (Detailed)
+
+#### 5.3.1 Deterministic Initiator
+- Function: `isDeterministicInitiator()` compares `username` vs `targetUser` to ensure only one side creates an offer during renegotiation
+- Function: `trySendOfferIfInitiator()` sends an SDP offer only if signaling state is `stable`, no remote description exists, and this side is the initiator
+
+```463:488:Client/src/services/WebRTCService.ts
+private async trySendOfferIfInitiator(): Promise<void> {
+  if (!this.peerConnection || !this.localStream) return;
+  if (this.peerConnection.signalingState !== 'stable') return;
+  if (this.peerConnection.remoteDescription) return;
+  if (!this.isDeterministicInitiator()) return;
+  if (this.hasSentOffer) return;
+  const offer = await this.peerConnection.createOffer();
+  await this.peerConnection.setLocalDescription(offer);
+  this.hasSentOffer = true;
+  this.sendMessage({ type: 'offer', from: this.username, to: this.targetUser, sessionId: this.sessionId, sdp: offer.sdp });
+}
+```
+
+#### 5.3.2 ICE Restart and PeerConnection Recreation
+- Function: `tryIceRestart()` attempts `createOffer({ iceRestart: true })` and re-sends an offer
+- If `peerConnection` is null but `localStream` exists, it calls `setupPeerConnection()` and re-adds all local tracks before attempting restart
+
+```528:551:Client/src/services/WebRTCService.ts
+public async tryIceRestart(): Promise<void> {
+  if (!this.peerConnection) {
+    if (this.localStream) {
+      this.setupPeerConnection();
+      this.localStream.getTracks().forEach(track => this.peerConnection?.addTrack(track, this.localStream!));
+    } else {
+      return;
+    }
+  }
+  const offer = await this.peerConnection.createOffer({ iceRestart: true });
+  await this.peerConnection.setLocalDescription(offer);
+  this.sendMessage({ type: 'offer', from: this.username, to: this.targetUser, sessionId: this.sessionId, sdp: offer.sdp });
+}
+```
+
+#### 5.3.3 Signaling Reconnection with Exponential Backoff
+- Function: `scheduleReconnect()` backs off exponentially with base delay and jitter, limited by `maxReconnectAttempts`
+- After successful reconnect, it attempts `tryIceRestart()` to renegotiate media paths
+
+```490:526:Client/src/services/WebRTCService.ts
+private scheduleReconnect(): void {
+  if (this.reconnectAttempts >= this.maxReconnectAttempts) return;
+  if (this.reconnectTimer) return;
+  const backoff = this.reconnectDelayBaseMs * Math.pow(2, this.reconnectAttempts);
+  const jitter = Math.floor(Math.random() * 300);
+  const delay = backoff + jitter;
+  this.reconnectTimer = setTimeout(async () => {
+    this.reconnectTimer = null;
+    this.reconnectAttempts++;
+    if (this.lastConnectParams) {
+      const ok = await this.connect(this.lastConnectParams.username, this.lastConnectParams.sessionId, this.lastConnectParams.targetUser);
+      if (ok) {
+        await this.tryIceRestart().catch(() => {});
+      }
+    }
+  }, delay) as unknown as number;
+}
+```
+
+#### 5.3.4 Pending ICE Candidate Buffering
+- Property: `pendingCandidates: SignalMessage[]`
+- Behavior: If remote description is not set when a candidate arrives, buffer it; process in `processPendingCandidates()` after remote description is applied
+
+```323:346:Client/src/services/WebRTCService.ts
+private async processPendingCandidates(): Promise<void> {
+  if (!this.pendingCandidates.length || !this.peerConnection) return;
+  for (const candidateData of this.pendingCandidates) {
+    const candidate = new RTCIceCandidate({
+      candidate: candidateData.candidate,
+      sdpMLineIndex: candidateData.sdpMLineIndex,
+      sdpMid: candidateData.sdpMid
+    });
+    await this.peerConnection.addIceCandidate(candidate);
+  }
+  this.pendingCandidates = [];
+}
+```
+
+#### 5.3.5 State Change Triggers
+- On `connectionState` or `iceConnectionState` becoming `failed`/`disconnected`, the service triggers `tryIceRestart()` and may schedule signaling reconnect if needed
+
+```414:445:Client/src/services/WebRTCService.ts
+this.peerConnection.onconnectionstatechange = () => {
+  const state = this.peerConnection?.connectionState;
+  if (state === 'failed' || state === 'disconnected') {
+    this.tryIceRestart().catch(() => {});
+    if (!this.isConnected) this.scheduleReconnect();
+  }
+};
+this.peerConnection.oniceconnectionstatechange = () => {
+  const state = this.peerConnection?.iceConnectionState;
+  if (state === 'failed' || state === 'disconnected') {
+    this.tryIceRestart().catch(() => {});
+  }
+};
+```
+
+#### 5.3.6 Configuration Parameters
+- `maxReconnectAttempts = 5`
+- `reconnectDelayBaseMs = 1000`
+- `pendingCandidates` buffer size: unbounded in code, expected to be small due to short window
+
 ## 6. Service Layer Implementation
 
 ### 6.1 Authentication Service

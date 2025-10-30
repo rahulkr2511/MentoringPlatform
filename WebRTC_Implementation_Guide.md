@@ -312,6 +312,63 @@ this.peerConnection.oniceconnectionstatechange = () => {
 };
 ```
 
+### **5. Connection Resilience and Attempt Recreation**
+
+This implementation includes robust reconnection and attempt recreation logic to maintain call stability:
+
+- Deterministic initiator logic ensures only one side sends an offer when renegotiation is needed
+- ICE restart is attempted on connection failure/disconnect to restore media flow
+- Signaling reconnection uses exponential backoff with jitter and a configurable maximum attempts
+- Peer connection is recreated if missing, and local tracks are re-added automatically
+- Pending ICE candidates are buffered and processed after remote description is set
+
+```23:48:Client/src/services/WebRTCService.ts
+// Decide initiator deterministically by comparing usernames
+private isDeterministicInitiator(): boolean {
+  if (!this.username || !this.targetUser) return false;
+  return this.username.localeCompare(this.targetUser) < 0;
+}
+```
+
+```540:556:Client/src/services/WebRTCService.ts
+public async tryIceRestart(): Promise<void> {
+  if (!this.peerConnection) {
+    if (this.localStream) {
+      this.setupPeerConnection();
+      this.localStream.getTracks().forEach(track => this.peerConnection?.addTrack(track, this.localStream!));
+    } else {
+      return;
+    }
+  }
+  const offer = await this.peerConnection.createOffer({ iceRestart: true });
+  await this.peerConnection.setLocalDescription(offer);
+  this.sendMessage({ type: 'offer', from: this.username, to: this.targetUser, sessionId: this.sessionId, sdp: offer.sdp });
+}
+```
+
+```490:526:Client/src/services/WebRTCService.ts
+// Exponential backoff reconnect for signaling
+private scheduleReconnect(): void {
+  if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+    return;
+  }
+  if (this.reconnectTimer) return;
+  const backoff = this.reconnectDelayBaseMs * Math.pow(2, this.reconnectAttempts);
+  const jitter = Math.floor(Math.random() * 300);
+  const delay = backoff + jitter;
+  this.reconnectTimer = setTimeout(async () => {
+    this.reconnectTimer = null;
+    this.reconnectAttempts++;
+    if (this.lastConnectParams) {
+      const ok = await this.connect(this.lastConnectParams.username, this.lastConnectParams.sessionId, this.lastConnectParams.targetUser);
+      if (ok) {
+        await this.tryIceRestart().catch(() => {});
+      }
+    }
+  }, delay) as unknown as number;
+}
+```
+
 ## Message Types
 
 ### **Signaling Messages**
@@ -463,7 +520,7 @@ public disconnect(): void {
 ## Current Limitations
 
 1. **No TURN Server**: Cannot handle restrictive firewalls
-2. **No Reconnection Logic**: No automatic reconnection on failures
+2. **Limited Reconnection Scope**: Reconnect covers signaling and ICE restart, but no TURN fallback
 3. **No Quality Adaptation**: No adaptive bitrate based on network
 4. **No Recording**: No session recording capability
 5. **Basic Error Handling**: Limited error recovery mechanisms

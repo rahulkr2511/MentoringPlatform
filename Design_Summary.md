@@ -41,6 +41,7 @@ This document provides a comprehensive analysis of the Mentoring Platform applic
 - Media stream management (audio/video) with device access
 - Call controls (mute, video toggle, screen sharing)
 - Session-based room management for secure connections
+- Connection resilience with ICE restart, signaling reconnect (exponential backoff), and peer connection recreation
 
 ### 4. Real-time Chat Communication
 - Session-based real-time text messaging
@@ -106,6 +107,7 @@ This document provides a comprehensive analysis of the Mentoring Platform applic
 4. ICE candidate exchange for network connectivity
 5. Peer-to-peer media streaming with audio/video controls
 6. Session-based room management for secure connections
+7. Resilience: Automatic ICE restart and signaling reconnection with exponential backoff; deterministic initiator prevents glare; peer connection recreation with local track re-attachment
 
 ## Chat Implementation
 

@@ -64,6 +64,13 @@ The Mentoring Platform is a web-based application that facilitates 1-on-1 video 
 - **Signaling**: Offer/Answer exchange and ICE candidate handling
 - **Chat Messaging**: Session-based real-time text messaging
 
+#### Resilience & Attempt Recreation (WebRTC)
+- Deterministic initiator for renegotiation to prevent glare
+- Automatic ICE restart on `failed`/`disconnected` states
+- Exponential backoff with jitter for signaling reconnect; capped attempts
+- PeerConnection recreation with local track re-attachment if missing
+- Buffered ICE candidates processed after remote description is set
+
 ## 3. User Roles & Permissions
 
 ### 3.1 Mentor Role
@@ -115,6 +122,10 @@ The Mentoring Platform is a web-based application that facilitates 1-on-1 video 
 6. ICE candidates exchanged for NAT traversal
 7. Peer-to-peer media stream established
 8. Video call proceeds with real-time communication
+9. Connection resilience sequence (on failure/disconnect):
+   9.1 Attempt ICE restart and renegotiate (deterministic initiator)
+   9.2 If signaling disconnected, reconnect with exponential backoff
+   9.3 Recreate RTCPeerConnection and re-add local tracks if needed
 ```
 
 ### 4.4 Chat Communication Workflow

@@ -43,6 +43,8 @@ export class WebRTCService {
   private reconnectTimer: number | null = null;
   private lastConnectParams: { username: string; sessionId: string; targetUser: string } | null = null;
   private hasSentOffer = false;
+  private signalSubscription: any | null = null;
+  private subscribedUsername: string | null = null;
 
   constructor() {
     // Don't setup peer connection in constructor - wait until we have a stream
@@ -50,16 +52,44 @@ export class WebRTCService {
 
   // Initialize WebSocket connection
   public async connect(username: string, sessionId: string, targetUser: string): Promise<boolean> {
-    // If already connected, return true
-    if (this.isConnected && this.stompClient && this.stompClient.connected) {
-      console.log('Already connected to WebSocket');
-      return true;
-    }
-
+    // Always update identities/session info first
     this.username = username;
     this.sessionId = sessionId;
     this.targetUser = targetUser;
     this.lastConnectParams = { username, sessionId, targetUser };
+    // Reset per-attempt state
+    this.hasSentOffer = false;
+    this.pendingCandidates = [];
+
+    // If already connected, ensure subscription is correct and send join
+    if (this.isConnected && this.stompClient && this.stompClient.connected) {
+      console.log('Already connected to WebSocket');
+      // Re-subscribe if username changed
+      if (this.subscribedUsername !== username) {
+        try {
+          if (this.signalSubscription && typeof this.signalSubscription.unsubscribe === 'function') {
+            this.signalSubscription.unsubscribe();
+          }
+        } catch (e) {
+          console.warn('Error unsubscribing previous signal subscription:', e);
+        }
+        this.signalSubscription = this.stompClient.subscribe(`/topic/signal/${username}`, (msg: any) => {
+          const data: SignalMessage = JSON.parse(msg.body);
+          this.handleSignal(data);
+        });
+        this.subscribedUsername = username;
+      }
+      // Send fresh join for new session/target
+      setTimeout(() => {
+        this.sendMessage({
+          type: 'join',
+          from: username,
+          to: targetUser,
+          sessionId: sessionId
+        });
+      }, 50);
+      return true;
+    }
 
     return new Promise((resolve) => {
       const socket = new SockJS('http://localhost:8080/ws');
@@ -88,11 +118,15 @@ export class WebRTCService {
         console.log('WebSocket connected successfully');
         
         // Subscribe to signaling messages
-        this.stompClient?.subscribe(`/topic/signal/${username}`, (msg) => {
+        if (this.signalSubscription && typeof this.signalSubscription.unsubscribe === 'function') {
+          try { this.signalSubscription.unsubscribe(); } catch {}
+        }
+        this.signalSubscription = this.stompClient?.subscribe(`/topic/signal/${username}`, (msg) => {
           console.log('Received message on topic:', `/topic/signal/${username}`);
           const data: SignalMessage = JSON.parse(msg.body);
           this.handleSignal(data);
         });
+        this.subscribedUsername = username;
 
         // Send join message after a short delay to ensure connection is ready
         setTimeout(() => {
@@ -134,12 +168,23 @@ export class WebRTCService {
       this.stompClient = null;
     }
     this.isConnected = false;
+    // Clear subscription state
+    try {
+      if (this.signalSubscription && typeof this.signalSubscription.unsubscribe === 'function') {
+        this.signalSubscription.unsubscribe();
+      }
+    } catch {}
+    this.signalSubscription = null;
+    this.subscribedUsername = null;
     // clear reconnect attempts/timers
     this.reconnectAttempts = 0;
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = null;
     }
+    // Reset negotiation flags and pending buffers
+    this.hasSentOffer = false;
+    this.pendingCandidates = [];
   }
 
   // Initialize local media stream
