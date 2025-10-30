@@ -130,18 +130,25 @@ const VideoCall = ({
         });
 
         // Initialize local media stream (this also sets up the peer connection)
-        const localStream = await webRTCService.initializeLocalStream();
-        console.log('Local stream initialized:', localStream);
-        
-        // Manually set the local stream if callback didn't work
-        if (!localStream) {
-          console.warn('No local stream received from service');
-        } else {
-          setLocalStream(localStream);
-          if (localVideoRef.current) {
-            localVideoRef.current.srcObject = localStream;
-            console.log('Manually connected local video element');
+        // Request local media stream with explicit error handling for permissions
+        try {
+          const localStream = await webRTCService.initializeLocalStream();
+          console.log('Local stream initialized:', localStream);
+          // Manually set the local stream if callback didn't work
+          if (!localStream) {
+            console.warn('No local stream received from service');
+          } else {
+            setLocalStream(localStream);
+            if (localVideoRef.current) {
+              localVideoRef.current.srcObject = localStream;
+              console.log('Manually connected local video element');
+            }
           }
+        } catch (mediaErr) {
+          console.error('Error accessing camera/microphone:', mediaErr);
+          const reason = mediaErr?.name || mediaErr?.message || 'Unknown';
+          showError(`Cannot access camera/microphone (${reason}). Please allow permissions in your browser settings, ensure no other app is using them, and reload.`);
+          return;
         }
 
         // Start the call (mentor initiates, mentee responds)
@@ -151,6 +158,8 @@ const VideoCall = ({
 
       } catch (error) {
         console.error('Error initializing call:', error);
+        const msg = error?.message || 'Unknown error while setting up call';
+        showError(`Call setup failed: ${msg}`);
       }
     };
 
@@ -420,7 +429,7 @@ const VideoCall = ({
             sessionId={sessionData?.id?.toString() || roomId}
             participantName={isMentor ? (selectedMentor?.name || "Mentee") : selectedMentor?.name}
             isMentor={isMentor}
-            currentUsername={getCurrentUser()?.username || AuthService.getStoredUser()?.username}
+            currentUsername={getCurrentUser() || AuthService.getStoredUser()?.username}
             sessionData={sessionData}
           />
         </div>

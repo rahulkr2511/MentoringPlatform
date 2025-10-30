@@ -37,6 +37,12 @@ export class WebRTCService {
   private onConnectionStateChange: ((state: string) => void) | null = null;
   private onIceConnectionStateChange: ((state: string) => void) | null = null;
   private pendingCandidates: SignalMessage[] = [];
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 5;
+  private reconnectDelayBaseMs = 1000;
+  private reconnectTimer: number | null = null;
+  private lastConnectParams: { username: string; sessionId: string; targetUser: string } | null = null;
+  private hasSentOffer = false;
 
   constructor() {
     // Don't setup peer connection in constructor - wait until we have a stream
@@ -53,10 +59,30 @@ export class WebRTCService {
     this.username = username;
     this.sessionId = sessionId;
     this.targetUser = targetUser;
+    this.lastConnectParams = { username, sessionId, targetUser };
 
     return new Promise((resolve) => {
       const socket = new SockJS('http://localhost:8080/ws');
       this.stompClient = Stomp.over(socket);
+      // Reduce noisy logs from stomp - set to no-op function (must be a function)
+      (this.stompClient as any).debug = () => {};
+
+      // Setup failure handlers to trigger reconnect
+      this.stompClient.onStompError = (frame) => {
+        console.error('STOMP error:', frame.headers['message']);
+        this.isConnected = false;
+        this.scheduleReconnect();
+      };
+      this.stompClient.onWebSocketClose = () => {
+        console.warn('WebSocket closed');
+        this.isConnected = false;
+        this.scheduleReconnect();
+      };
+      this.stompClient.onWebSocketError = (ev: any) => {
+        console.error('WebSocket error:', ev);
+        this.isConnected = false;
+        this.scheduleReconnect();
+      };
 
       this.stompClient.connect({}, () => {
         console.log('WebSocket connected successfully');
@@ -79,10 +105,17 @@ export class WebRTCService {
         }, 100);
 
         this.isConnected = true;
+        // reset reconnect attempts on success
+        this.reconnectAttempts = 0;
+        if (this.reconnectTimer) {
+          clearTimeout(this.reconnectTimer);
+          this.reconnectTimer = null;
+        }
         resolve(true);
       }, (error) => {
         console.error('WebSocket connection failed:', error);
         this.isConnected = false;
+        this.scheduleReconnect();
         resolve(false);
       });
     });
@@ -101,6 +134,12 @@ export class WebRTCService {
       this.stompClient = null;
     }
     this.isConnected = false;
+    // clear reconnect attempts/timers
+    this.reconnectAttempts = 0;
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
   }
 
   // Initialize local media stream
@@ -131,6 +170,14 @@ export class WebRTCService {
       } else {
         console.warn('No onLocalStream callback set');
       }
+
+      // Fallback: if no remote description yet, try deterministic initiator offer shortly after setup
+      setTimeout(() => {
+        // Only attempt if still no remote description and stable
+        if (this.peerConnection && !this.peerConnection.remoteDescription) {
+          this.trySendOfferIfInitiator().catch((e) => console.warn('Offer fallback skipped/failed:', e));
+        }
+      }, 500);
 
       return this.localStream;
     } catch (error) {
@@ -371,6 +418,18 @@ export class WebRTCService {
       if (this.onConnectionStateChange) {
         this.onConnectionStateChange(state || 'unknown');
       }
+      // Attempt recovery on failure/disconnect
+      if (state === 'failed' || state === 'disconnected') {
+        this.tryIceRestart().catch((e) => console.error('ICE restart failed:', e));
+        if (!this.isConnected) {
+          this.scheduleReconnect();
+        }
+      }
+      if (state === 'closed') {
+        if (!this.isConnected) {
+          this.scheduleReconnect();
+        }
+      }
     };
 
     // Handle ICE connection state changes
@@ -380,6 +439,14 @@ export class WebRTCService {
       if (this.onIceConnectionStateChange) {
         this.onIceConnectionStateChange(state || 'unknown');
       }
+      if (state === 'failed' || state === 'disconnected') {
+        this.tryIceRestart().catch((e) => console.error('ICE restart failed:', e));
+      }
+    };
+
+    // Trigger negotiation when needed (deterministic initiator)
+    this.peerConnection.onnegotiationneeded = () => {
+      this.trySendOfferIfInitiator().catch((e) => console.warn('Negotiationneeded offer skipped/failed:', e));
     };
   }
 
@@ -390,6 +457,112 @@ export class WebRTCService {
       this.stompClient.send('/app/signal', {}, JSON.stringify(message));
     } else {
       console.warn('WebSocket not connected, cannot send message');
+    }
+  }
+
+  // Decide initiator deterministically by comparing usernames
+  private isDeterministicInitiator(): boolean {
+    if (!this.username || !this.targetUser) return false;
+    return this.username.localeCompare(this.targetUser) < 0;
+  }
+
+  // Attempt to send an SDP offer if this side is the initiator
+  private async trySendOfferIfInitiator(): Promise<void> {
+    if (!this.peerConnection || !this.localStream) return;
+    if (this.peerConnection.signalingState !== 'stable') return;
+    if (this.peerConnection.remoteDescription) return; // already have remote
+    // Only one side should send offer
+    if (!this.isDeterministicInitiator()) return;
+    if (this.hasSentOffer) return;
+    console.log('Deterministic initiator creating offer');
+    const offer = await this.peerConnection.createOffer();
+    await this.peerConnection.setLocalDescription(offer);
+    this.hasSentOffer = true;
+    this.sendMessage({
+      type: 'offer',
+      from: this.username,
+      to: this.targetUser,
+      sessionId: this.sessionId,
+      sdp: offer.sdp
+    });
+  }
+
+  // Schedules a reconnect to signaling server using exponential backoff
+  private scheduleReconnect(): void {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      console.error('Max reconnect attempts reached. Giving up for now.');
+      return;
+    }
+    if (this.reconnectTimer) {
+      // already scheduled
+      return;
+    }
+    const attempt = this.reconnectAttempts + 1;
+    const backoff = this.reconnectDelayBaseMs * Math.pow(2, this.reconnectAttempts);
+    const jitter = Math.floor(Math.random() * 300);
+    const delay = backoff + jitter;
+    console.warn(`Scheduling reconnect attempt ${attempt}/${this.maxReconnectAttempts} in ${delay}ms`);
+    this.reconnectTimer = setTimeout(async () => {
+      this.reconnectTimer = null;
+      this.reconnectAttempts++;
+      try {
+        if (this.lastConnectParams) {
+          const ok = await this.connect(
+            this.lastConnectParams.username,
+            this.lastConnectParams.sessionId,
+            this.lastConnectParams.targetUser
+          );
+          if (ok) {
+            console.log('Reconnected to signaling server');
+            // After reconnect, if we already had a peer connection, try to renegotiate
+            await this.tryIceRestart().catch(() => {});
+          }
+        }
+      } catch (err) {
+        console.error('Reconnect attempt failed:', err);
+        this.scheduleReconnect();
+      }
+    }, delay) as unknown as number;
+  }
+
+  // Attempts an ICE restart/renegotiation to recover media flow
+  public async tryIceRestart(): Promise<void> {
+    if (!this.peerConnection) {
+      if (this.localStream) {
+        // Recreate peer connection and re-add tracks
+        this.setupPeerConnection();
+        this.localStream.getTracks().forEach(track => this.peerConnection?.addTrack(track, this.localStream!));
+      } else {
+        console.warn('No peer connection or local stream to restart ICE');
+        return;
+      }
+    }
+    if (!this.peerConnection) return;
+    try {
+      console.log('Attempting ICE restart via offer');
+      const offer = await this.peerConnection.createOffer({ iceRestart: true });
+      await this.peerConnection.setLocalDescription(offer);
+      this.sendMessage({
+        type: 'offer',
+        from: this.username,
+        to: this.targetUser,
+        sessionId: this.sessionId,
+        sdp: offer.sdp
+      });
+    } catch (e) {
+      console.error('Error during ICE restart offer:', e);
+      throw e;
+    }
+  }
+
+  // Ensures signaling and peer connection are up; can be called by UI on demand
+  public async ensureConnected(): Promise<void> {
+    if (!this.isConnected && this.lastConnectParams) {
+      await this.connect(this.lastConnectParams.username, this.lastConnectParams.sessionId, this.lastConnectParams.targetUser);
+    }
+    if (!this.peerConnection && this.localStream) {
+      this.setupPeerConnection();
+      this.localStream.getTracks().forEach(track => this.peerConnection?.addTrack(track, this.localStream!));
     }
   }
 
