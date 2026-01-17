@@ -4,11 +4,11 @@
   "description": "Mentoring Platform - Full Stack Application",
   "scripts": {
     "start": "concurrently \"npm run start:server\" \"npm run start:client\"",
-    "start:server": "cd MentoringPlatform/Server && mvn spring-boot:run",
-    "start:client": "cd MentoringPlatform/Client && npm start",
-    "install:client": "cd MentoringPlatform/Client && npm install",
-    "build:server": "cd MentoringPlatform/Server && mvn clean package",
-    "build:client": "cd MentoringPlatform/Client && npm run build"
+    "start:server": "cd Server && mvn spring-boot:run",
+    "start:client": "cd Client && npm start",
+    "install:client": "cd Client && npm install",
+    "build:server": "cd Server && mvn clean package",
+    "build:client": "cd Client && npm run build"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

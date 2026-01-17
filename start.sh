@@ -9,8 +9,8 @@ NC='\033[0m' # No Color
 
 # Get the directory where the script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-SERVER_DIR="$SCRIPT_DIR/MentoringPlatform/Server"
-CLIENT_DIR="$SCRIPT_DIR/MentoringPlatform/Client"
+SERVER_DIR="$SCRIPT_DIR/Server"
+CLIENT_DIR="$SCRIPT_DIR/Client"
 
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}  Mentoring Platform Startup Script${NC}"

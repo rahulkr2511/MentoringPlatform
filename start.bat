@@ -4,8 +4,8 @@ REM Mentoring Platform Startup Script for Windows
 setlocal enabledelayedexpansion
 
 set SCRIPT_DIR=%~dp0
-set SERVER_DIR=%SCRIPT_DIR%MentoringPlatform\Server
-set CLIENT_DIR=%SCRIPT_DIR%MentoringPlatform\Client
+set SERVER_DIR=%SCRIPT_DIR%Server
+set CLIENT_DIR=%SCRIPT_DIR%Client
 
 echo ========================================
 echo   Mentoring Platform Startup Script
