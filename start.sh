@@ -76,8 +76,9 @@ else
     echo -e "${GREEN}✓ Ant found${NC}"
 fi
 
-# Create server-logs directory if it doesn't exist
+# Create log directories if they don't exist
 mkdir -p "$SERVER_DIR/server-logs"
+mkdir -p "$CLIENT_DIR/client-logs"
 
 # Setup Database using Ant
 if [ "$USE_ANT" = true ]; then
@@ -206,7 +207,7 @@ if [ ! -d "node_modules" ]; then
     npm install
 fi
 
-npm start > "$SERVER_DIR/server-logs/client.log" 2>&1 &
+npm start > "$CLIENT_DIR/client-logs/client.log" 2>&1 &
 CLIENT_PID=$!
 
 # Wait a bit for client to start
@@ -215,10 +216,10 @@ sleep 3
 # Check if client is running
 if ps -p $CLIENT_PID > /dev/null; then
     echo -e "${GREEN}✓ Client started (PID: $CLIENT_PID)${NC}"
-    echo -e "${GREEN}  Client logs: Server/server-logs/client.log${NC}"
+    echo -e "${GREEN}  Client logs: Client/client-logs/client.log${NC}"
     echo -e "${GREEN}  Client URL: http://localhost:3000${NC}"
 else
-    echo -e "${RED}✗ Client failed to start. Check logs: Server/server-logs/client.log${NC}"
+    echo -e "${RED}✗ Client failed to start. Check logs: Client/client-logs/client.log${NC}"
     kill $SERVER_PID 2>/dev/null
     exit 1
 fi

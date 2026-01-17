@@ -167,7 +167,7 @@ npm start
 - **Client UI**: http://localhost:3000
 - **Server API**: http://localhost:8080
 - **Server Logs**: `Server/server-logs/server.log`
-- **Client Logs**: `Server/server-logs/client.log`
+- **Client Logs**: `Client/client-logs/client.log`
 - **Database Setup Logs**: `Server/server-logs/db-setup.log`
 
 ---
@@ -214,7 +214,7 @@ npm start
 
 ### Client Fails to Start
 
-1. Check client logs: `Server/server-logs/client.log`
+1. Check client logs: `Client/client-logs/client.log`
 2. Verify Node.js version: `node -version`
 3. Reinstall dependencies:
    ```bash

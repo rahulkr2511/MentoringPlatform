@@ -7,9 +7,11 @@ set SCRIPT_DIR=%~dp0
 set SERVER_DIR=%SCRIPT_DIR%Server
 set CLIENT_DIR=%SCRIPT_DIR%Client
 set LOGS_DIR=%SERVER_DIR%\server-logs
+set CLIENT_LOGS_DIR=%CLIENT_DIR%\client-logs
 
-REM Create server-logs directory if it doesn't exist
+REM Create log directories if they don't exist
 if not exist "%LOGS_DIR%" mkdir "%LOGS_DIR%"
+if not exist "%CLIENT_LOGS_DIR%" mkdir "%CLIENT_LOGS_DIR%"
 
 echo ========================================
 echo   Mentoring Platform Startup Script
@@ -132,13 +134,13 @@ if not exist "node_modules" (
     call npm install
 )
 
-start "Mentoring Platform Client" cmd /c "npm start > "%LOGS_DIR%\client.log" 2>&1"
+start "Mentoring Platform Client" cmd /c "npm start > "%CLIENT_LOGS_DIR%\client.log" 2>&1"
 
 REM Wait a bit for client to start
 timeout /t 3 /nobreak >nul
 
 echo   Client started
-echo   Client logs: Server\server-logs\client.log
+echo   Client logs: Client\client-logs\client.log
 echo   Client URL: http://localhost:3000
 echo.
 
