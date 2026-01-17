@@ -4,9 +4,11 @@ import com.mentoringplatform.server.dto.SessionBookingRequest;
 import com.mentoringplatform.server.dto.SessionResponse;
 import com.mentoringplatform.server.model.Session;
 import com.mentoringplatform.server.model.User;
+import com.mentoringplatform.server.model.UserNotification;
 import com.mentoringplatform.server.repository.SessionRepository;
 import com.mentoringplatform.server.repository.UserRepository;
-import com.mentoringplatform.server.service.AvailabilityService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,14 +20,24 @@ import java.util.stream.Collectors;
 @Service
 public class SessionService {
 
+    private static final Logger log = LoggerFactory.getLogger(SessionService.class);
+
     private final SessionRepository sessionRepository;
     private final UserRepository userRepository;
     private final AvailabilityService availabilityService;
+    private final NotificationService notificationService;
+    private final PushNotificationDispatcher pushNotificationDispatcher;
 
-    public SessionService(SessionRepository sessionRepository, UserRepository userRepository, AvailabilityService availabilityService) {
+    public SessionService(SessionRepository sessionRepository,
+                          UserRepository userRepository,
+                          AvailabilityService availabilityService,
+                          NotificationService notificationService,
+                          PushNotificationDispatcher pushNotificationDispatcher) {
         this.sessionRepository = sessionRepository;
         this.userRepository = userRepository;
         this.availabilityService = availabilityService;
+        this.notificationService = notificationService;
+        this.pushNotificationDispatcher = pushNotificationDispatcher;
     }
 
     @Transactional
@@ -130,6 +142,35 @@ public class SessionService {
         session.setStatus(Session.SessionStatus.CANCELLED);
         Session updatedSession = sessionRepository.save(session);
         return convertToSessionResponse(updatedSession);
+    }
+
+    @Transactional
+    public void recordSessionJoin(Long sessionId, String username) {
+        Session session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new RuntimeException("Session not found"));
+
+        User actor = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        boolean isMentor = session.getMentor().getId().equals(actor.getId());
+        boolean isMentee = session.getMentee().getId().equals(actor.getId());
+
+        if (!isMentor && !isMentee) {
+            throw new RuntimeException("User is not part of this session");
+        }
+
+        User recipient = isMentor ? session.getMentee() : session.getMentor();
+        if (recipient == null) {
+            throw new RuntimeException("Session counterpart not available");
+        }
+
+        String actorDisplayName = actor.getName() != null ? actor.getName() : actor.getUsername();
+        String messageBody = actorDisplayName + " joined the session.";
+        log.info("📢 [SessionService] Recording session join - SessionId: {}, Actor: {} (ID: {}), Recipient: {} (ID: {})", 
+                sessionId, actor.getUsername(), actor.getId(), recipient.getUsername(), recipient.getId());
+        UserNotification notification = notificationService.createSessionJoinNotification(session, actor, recipient, messageBody);
+        log.info("📢 [SessionService] Notification created with ID: {}, dispatching push notification", notification.getId());
+        pushNotificationDispatcher.dispatchSessionJoin(notification, recipient, actorDisplayName);
     }
 
     private SessionResponse convertToSessionResponse(Session session) {

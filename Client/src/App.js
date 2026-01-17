@@ -5,12 +5,15 @@ import Login from './components/Login';
 import MenteeDashboard from './components/MenteeDashboard';
 import MentorDashboard from './components/MentorDashboard';
 import Toast from './components/Toast';
+import NotificationDrawer from './components/NotificationDrawer';
 import { NotificationProvider, useNotificationContext } from './contexts/NotificationContext';
+import { registerNotificationServiceWorker } from './services/notificationServiceRegistration';
 
 function AppContent() {
   const [currentView, setCurrentView] = useState('home'); // 'home', 'login', or 'dashboard'
   const [userData, setUserData] = useState(null);
   const { notifications, removeNotification } = useNotificationContext();
+  const isLoggedIn = currentView === 'dashboard' && !!userData;
 
   // Check for existing authentication on app load
   useEffect(() => {
@@ -20,12 +23,15 @@ function AppContent() {
     if (token && user) {
       setUserData(JSON.parse(user));
       setCurrentView('dashboard');
+      // Register service worker for push notifications when user is already logged in
+      registerNotificationServiceWorker();
     }
   }, []);
 
   const handleLoginSuccess = (userData) => {
     setUserData(userData);
     setCurrentView('dashboard');
+    registerNotificationServiceWorker();
   };
 
   const handleLogout = () => {
@@ -72,6 +78,7 @@ function AppContent() {
       
       {/* Toast Notifications */}
       <Toast notifications={notifications} onRemove={removeNotification} />
+      {isLoggedIn && <NotificationDrawer />}
       
       {/* Navigation buttons for testing - only show when not on dashboard */}
       {currentView !== 'dashboard' && (

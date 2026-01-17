@@ -1,0 +1,145 @@
+.notification-drawer {
+  position: fixed;
+  top: 0;
+  right: -380px;
+  width: 360px;
+  height: 100vh;
+  background: #fff;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
+  transition: right 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  z-index: 10000;
+}
+
+.notification-drawer.open {
+  right: 0;
+}
+
+.drawer-header {
+  padding: 16px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.drawer-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.drawer-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.mark-all-btn,
+.close-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px 6px;
+  color: #4a5568;
+}
+
+.mark-all-btn:hover,
+.close-btn:hover {
+  color: #2d3748;
+}
+
+.drawer-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.drawer-status {
+  text-align: center;
+  color: #4a5568;
+  margin-top: 40px;
+}
+
+.drawer-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.drawer-item.unread {
+  background: #edf2f7;
+  border-color: #cbd5f5;
+}
+
+.drawer-item:hover {
+  background: #e2e8f0;
+}
+
+.drawer-item-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 4px;
+}
+
+.drawer-item-header time {
+  font-size: 12px;
+  color: #718096;
+}
+
+.drawer-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.drawer-item-body h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d3748;
+  text-align: left;
+}
+
+.drawer-item-body p {
+  margin: 0;
+  color: #4a5568;
+  font-size: 14px;
+  text-align: left;
+}
+
+.drawer-link {
+  font-size: 14px;
+  color: #3182ce;
+  text-decoration: none;
+}
+
+.drawer-link:hover {
+  text-decoration: underline;
+}
+
+.drawer-item-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mark-read-btn {
+  border: none;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.mark-read-btn:hover {
+  opacity: 0.85;
+}

@@ -1,5 +1,6 @@
 import SockJS from 'sockjs-client';
 import { CompatClient, Stomp } from '@stomp/stompjs';
+import { WS_BASE_URL } from '../config/env';
 
 export interface ChatMessage {
   sessionId: string;
@@ -30,7 +31,7 @@ export class ChatService {
 
     return new Promise((resolve) => {
       console.log('Creating SockJS connection...');
-      const socket = new SockJS('http://localhost:8080/ws');
+      const socket = new SockJS(WS_BASE_URL);
       this.stompClient = Stomp.over(socket);
 
       // Add authorization header

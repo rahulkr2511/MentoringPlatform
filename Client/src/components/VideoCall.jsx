@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { AuthService } from '../services/Services.ts';
+import { AuthService, SessionService } from '../services/Services.ts';
 import { webRTCService } from '../services/WebRTCService.ts';
 import Chat from './Chat';
 import { useNotificationContext } from '../contexts/NotificationContext';
@@ -22,6 +22,7 @@ const VideoCall = ({
   
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
+  const sessionJoinAnnouncedRef = useRef(false);
 
   // Get current user
   const getCurrentUser = () => {
@@ -154,6 +155,20 @@ const VideoCall = ({
         // Start the call (mentor initiates, mentee responds)
         await webRTCService.startCall(isMentor);
 
+        const sessionId = sessionData?.id;
+        if (sessionId && !sessionJoinAnnouncedRef.current) {
+          try {
+            console.log('📢 [VideoCall] Notifying server of session join for sessionId:', sessionId);
+            const response = await SessionService.notifySessionJoin(sessionId);
+            console.log('✅ [VideoCall] Session join notification sent successfully:', response);
+            sessionJoinAnnouncedRef.current = true;
+          } catch (notifyError) {
+            console.error('❌ [VideoCall] Failed to notify session join:', notifyError);
+          }
+        } else {
+          console.log('⏭️ [VideoCall] Skipping session join notification:', { sessionId, alreadyAnnounced: sessionJoinAnnouncedRef.current });
+        }
+
         isInitialized = true;
 
       } catch (error) {
@@ -174,8 +189,13 @@ const VideoCall = ({
         webRTCService.disconnect();
         webRTCService.stopStreams();
       }
+      sessionJoinAnnouncedRef.current = false;
     };
   }, [roomId, isMentor, selectedMentor]);
+
+  useEffect(() => {
+    sessionJoinAnnouncedRef.current = false;
+  }, [sessionData?.id]);
 
   // Ensure video elements are connected to streams when they change
   useEffect(() => {

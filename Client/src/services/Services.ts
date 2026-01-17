@@ -1,5 +1,6 @@
+import { API_BASE_URL } from '../config/env';
+
 // API Base URL
-const API_BASE_URL = 'http://localhost:8080/monitoringPlatform';
 
 // Types for API responses
 interface ApiResponse<T> {
@@ -375,6 +376,23 @@ export const SessionService = {
 
     return apiCall<SessionResponse>(`/sessions/${sessionId}/cancel`, {
       method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  },
+
+  notifySessionJoin: async (sessionId: number): Promise<ApiResponse<null>> => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return {
+        success: false,
+        error: 'No authentication token found',
+      };
+    }
+
+    return apiCall<null>(`/sessions/${sessionId}/presence/join`, {
+      method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
       },

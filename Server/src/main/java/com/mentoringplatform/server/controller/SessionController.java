@@ -125,4 +125,19 @@ public class SessionController {
                     .body(ApiResponse.error("Failed to cancel session: " + e.getMessage()));
         }
     }
+
+    @PostMapping("/{sessionId}/presence/join")
+    @PreAuthorize("hasAnyRole('MENTOR', 'MENTEE')")
+    public ResponseEntity<ApiResponse<Void>> recordSessionJoin(
+            @PathVariable Long sessionId,
+            Authentication authentication) {
+        try {
+            String username = authentication.getName();
+            sessionService.recordSessionJoin(sessionId, username);
+            return ResponseEntity.ok(ApiResponse.success(null, "Session join recorded"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Failed to record session join: " + e.getMessage()));
+        }
+    }
 } 

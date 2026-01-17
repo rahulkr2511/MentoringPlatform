@@ -1,5 +1,6 @@
 import SockJS from 'sockjs-client';
 import { CompatClient, Stomp } from '@stomp/stompjs';
+import { WS_BASE_URL } from '../config/env';
 
 // WebRTC Configuration
 const ICE_SERVERS = {
@@ -92,7 +93,7 @@ export class WebRTCService {
     }
 
     return new Promise((resolve) => {
-      const socket = new SockJS('http://localhost:8080/ws');
+      const socket = new SockJS(WS_BASE_URL);
       this.stompClient = Stomp.over(socket);
       // Reduce noisy logs from stomp - set to no-op function (must be a function)
       (this.stompClient as any).debug = () => {};

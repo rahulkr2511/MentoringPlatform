@@ -2,6 +2,13 @@
   text-align: center;
 }
 
+.notification-bell-container {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 999;
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;

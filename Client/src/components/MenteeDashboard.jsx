@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { AuthService, MentorService, SessionService } from '../services/Services.ts';
 import VideoCall from './VideoCall';
 import Chat from './Chat';
+import NotificationBell from './NotificationBell';
 import { useNotificationContext } from '../contexts/NotificationContext';
+import LogoutIcon from '@mui/icons-material/Logout';
 import '../styles/Dashboard.css';
 
 const MenteeDashboard = ({ userData, onLogout }) => {
@@ -646,6 +648,12 @@ const MenteeDashboard = ({ userData, onLogout }) => {
 
   return (
     <div className="dashboard-container">
+      <div className="top-bar">
+        <NotificationBell />
+        <button onClick={handleLogout} className="btn-top-bar btn-logout" title="Logout">
+          <LogoutIcon className="logout-icon" />
+        </button>
+      </div>
       <div className="dashboard-header">
         <div className="dashboard-title">
           <h1>🎓 Mentee Learning Hub</h1>
@@ -677,9 +685,6 @@ const MenteeDashboard = ({ userData, onLogout }) => {
               disabled={!videoCallData.isInCall}
             >
               📹 Active Sessions {videoCallData.isInCall && '(1)'}
-            </button>
-            <button onClick={handleLogout} className="btn btn-logout">
-              🚪 Logout
             </button>
           </div>
         </div>
