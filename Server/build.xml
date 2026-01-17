@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="mentoring-platform-db-setup" default="setup-db" basedir=".">
+    
+    <!-- Properties -->
+    <property name="db.host" value="localhost"/>
+    <property name="db.port" value="5432"/>
+    <property name="db.name" value="mentoringdb"/>
+    <property name="db.user" value="rahulkr"/>
+    <property name="db.password" value=""/>
+    <property name="db.superuser" value="postgres"/>
+    <property name="setup.sql" value="setup-postgresql.sql"/>
+    
+    <!-- Detect OS -->
+    <condition property="isUnix">
+        <os family="unix"/>
+    </condition>
+    <condition property="isWindows">
+        <os family="windows"/>
+    </condition>
+    
+    <!-- Check if PostgreSQL is running -->
+    <target name="check-postgres">
+        <echo message="Checking if PostgreSQL is running on ${db.host}:${db.port}..."/>
+        <exec executable="pg_isready" osfamily="unix" failonerror="false" resultproperty="pg.ready.unix">
+            <arg value="-h"/>
+            <arg value="${db.host}"/>
+            <arg value="-p"/>
+            <arg value="${db.port}"/>
+        </exec>
+        <exec executable="pg_isready.exe" osfamily="windows" failonerror="false" resultproperty="pg.ready.windows">
+            <arg value="-h"/>
+            <arg value="${db.host}"/>
+            <arg value="-p"/>
+            <arg value="${db.port}"/>
+        </exec>
+        <condition property="postgres.running">
+            <or>
+                <equals arg1="${pg.ready.unix}" arg2="0"/>
+                <equals arg1="${pg.ready.windows}" arg2="0"/>
+            </or>
+        </condition>
+    </target>
+    
+    <!-- Start PostgreSQL (Unix) -->
+    <target name="start-postgres-unix" if="isUnix" depends="check-postgres" unless="postgres.running">
+        <echo message="Attempting to start PostgreSQL on Unix..."/>
+        
+        <!-- Try Homebrew -->
+        <exec executable="brew" failonerror="false" resultproperty="brew.result">
+            <arg value="services"/>
+            <arg value="start"/>
+            <arg value="postgresql@14"/>
+        </exec>
+        <exec executable="brew" failonerror="false" resultproperty="brew.result2" if="${brew.result} != 0">
+            <arg value="services"/>
+            <arg value="start"/>
+            <arg value="postgresql"/>
+        </exec>
+        
+        <!-- Wait a bit -->
+        <sleep seconds="3"/>
+        
+        <!-- Check again -->
+        <exec executable="pg_isready" failonerror="false" resultproperty="pg.ready.after">
+            <arg value="-h"/>
+            <arg value="${db.host}"/>
+            <arg value="-p"/>
+            <arg value="${db.port}"/>
+        </exec>
+        
+        <fail message="PostgreSQL could not be started automatically. Please start it manually.">
+            <condition>
+                <not>
+                    <equals arg1="${pg.ready.after}" arg2="0"/>
+                </not>
+            </condition>
+        </fail>
+        
+        <echo message="PostgreSQL started successfully!"/>
+    </target>
+    
+    <!-- Start PostgreSQL (Windows) -->
+    <target name="start-postgres-windows" if="isWindows" depends="check-postgres" unless="postgres.running">
+        <echo message="Attempting to start PostgreSQL on Windows..."/>
+        <exec executable="net" failonerror="false">
+            <arg value="start"/>
+            <arg value="postgresql-x64-14"/>
+        </exec>
+        <sleep seconds="3"/>
+        <echo message="Please ensure PostgreSQL service is running on Windows."/>
+    </target>
+    
+    <!-- Start PostgreSQL -->
+    <target name="start-postgres" depends="start-postgres-unix, start-postgres-windows">
+        <echo message="PostgreSQL should be running now."/>
+    </target>
+    
+    <!-- Check if database exists -->
+    <target name="check-database" depends="check-postgres">
+        <fail message="PostgreSQL is not running. Please start PostgreSQL first." unless="postgres.running"/>
+        
+        <echo message="Checking if database '${db.name}' exists..."/>
+        
+        <!-- Try to connect to the database directly -->
+        <exec executable="psql" osfamily="unix" failonerror="false" resultproperty="db.check.unix">
+            <arg value="-h"/>
+            <arg value="${db.host}"/>
+            <arg value="-p"/>
+            <arg value="${db.port}"/>
+            <arg value="-U"/>
+            <arg value="${db.user}"/>
+            <arg value="-d"/>
+            <arg value="${db.name}"/>
+            <arg value="-c"/>
+            <arg value="SELECT 1;"/>
+        </exec>
+        
+        <exec executable="psql.exe" osfamily="windows" failonerror="false" resultproperty="db.check.windows">
+            <arg value="-h"/>
+            <arg value="${db.host}"/>
+            <arg value="-p"/>
+            <arg value="${db.port}"/>
+            <arg value="-U"/>
+            <arg value="${db.user}"/>
+            <arg value="-d"/>
+            <arg value="${db.name}"/>
+            <arg value="-c"/>
+            <arg value="SELECT 1;"/>
+        </exec>
+        
+        <condition property="database.exists">
+            <or>
+                <equals arg1="${db.check.unix}" arg2="0"/>
+                <equals arg1="${db.check.windows}" arg2="0"/>
+            </or>
+        </condition>
+    </target>
+    
+    <!-- Create database -->
+    <target name="create-database" depends="check-database" unless="database.exists">
+        <echo message="Creating database '${db.name}'..."/>
+        
+        <exec executable="createdb" osfamily="unix" failonerror="false" resultproperty="create.result.unix">
+            <arg value="-h"/>
+            <arg value="${db.host}"/>
+            <arg value="-p"/>
+            <arg value="${db.port}"/>
+            <arg value="-U"/>
+            <arg value="${db.user}"/>
+            <arg value="${db.name}"/>
+        </exec>
+        
+        <!-- If createdb fails, try with psql -->
+        <exec executable="psql" osfamily="unix" failonerror="false" resultproperty="create.result2.unix" if="${create.result.unix} != 0">
+            <arg value="-h"/>
+            <arg value="${db.host}"/>
+            <arg value="-p"/>
+            <arg value="${db.port}"/>
+            <arg value="-U"/>
+            <arg value="${db.superuser}"/>
+            <arg value="-c"/>
+            <arg value="CREATE DATABASE ${db.name};"/>
+        </exec>
+        
+        <exec executable="createdb.exe" osfamily="windows" failonerror="false" resultproperty="create.result.windows">
+            <arg value="-h"/>
+            <arg value="${db.host}"/>
+            <arg value="-p"/>
+            <arg value="${db.port}"/>
+            <arg value="-U"/>
+            <arg value="${db.user}"/>
+            <arg value="${db.name}"/>
+        </exec>
+        
+        <sleep seconds="1"/>
+        <echo message="Database '${db.name}' created (or already exists)."/>
+    </target>
+    
+    <!-- Verify database connection -->
+    <target name="verify-connection" depends="create-database">
+        <echo message="Verifying database connection..."/>
+        
+        <exec executable="psql" osfamily="unix" failonerror="false" resultproperty="verify.result.unix">
+            <arg value="-h"/>
+            <arg value="${db.host}"/>
+            <arg value="-p"/>
+            <arg value="${db.port}"/>
+            <arg value="-U"/>
+            <arg value="${db.user}"/>
+            <arg value="-d"/>
+            <arg value="${db.name}"/>
+            <arg value="-c"/>
+            <arg value="SELECT version();"/>
+        </exec>
+        
+        <exec executable="psql.exe" osfamily="windows" failonerror="false" resultproperty="verify.result.windows">
+            <arg value="-h"/>
+            <arg value="${db.host}"/>
+            <arg value="-p"/>
+            <arg value="${db.port}"/>
+            <arg value="-U"/>
+            <arg value="${db.user}"/>
+            <arg value="-d"/>
+            <arg value="${db.name}"/>
+            <arg value="-c"/>
+            <arg value="SELECT version();"/>
+        </exec>
+        
+        <condition property="connection.verified">
+            <or>
+                <equals arg1="${verify.result.unix}" arg2="0"/>
+                <equals arg1="${verify.result.windows}" arg2="0"/>
+            </or>
+        </condition>
+        
+        <fail message="Could not verify database connection. Please check your database configuration." unless="connection.verified"/>
+        <echo message="✓ Database connection verified successfully!"/>
+    </target>
+    
+    <!-- Main setup target -->
+    <target name="setup-db" depends="check-postgres, start-postgres, verify-connection">
+        <echo message=""/>
+        <echo message="========================================="/>
+        <echo message="Database setup completed successfully!"/>
+        <echo message="========================================="/>
+        <echo message="Database: ${db.name}"/>
+        <echo message="Host: ${db.host}:${db.port}"/>
+        <echo message="User: ${db.user}"/>
+        <echo message=""/>
+        <echo message="Note: Tables will be created automatically by JPA/Hibernate"/>
+        <echo message="when the Spring Boot application starts."/>
+        <echo message=""/>
+    </target>
+    
+    <!-- Quick check target -->
+    <target name="check" depends="check-postgres">
+        <echo message="PostgreSQL status: ${postgres.running}"/>
+    </target>
+    
+</project>
