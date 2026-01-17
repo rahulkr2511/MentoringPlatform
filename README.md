@@ -23,6 +23,18 @@ The core features include:
 
 ---
 
+## 📚 Documentation
+
+For detailed documentation, design documents, and implementation guides, see the [Documentation](./Documentation/) folder:
+
+- **[High-Level Design (HLD)](./Documentation/HLD_MentoringPlatform.md)** - System architecture and design overview
+- **[Low-Level Design (LLD)](./Documentation/LLD_MentoringPlatform.md)** - Detailed component design and implementation
+- **[Development Roadmap](./Documentation/RoadMap.md)** - Project roadmap and future enhancements
+- **[WebRTC Implementation Guide](./Documentation/WebRTC_Implementation_Guide.md)** - WebRTC integration details
+- **[Design Summary](./Documentation/Design_Summary.md)** - Comprehensive design overview
+
+---
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -140,13 +152,13 @@ npm start
 
 **Start Server:**
 ```bash
-cd MentoringPlatform/Server
+cd Server
 mvn spring-boot:run
 ```
 
 **Start Client (in a new terminal):**
 ```bash
-cd MentoringPlatform/Client
+cd Client
 npm install  # First time only
 npm start
 ```
@@ -154,8 +166,9 @@ npm start
 ### Accessing the Application
 - **Client UI**: http://localhost:3000
 - **Server API**: http://localhost:8080
-- **Server Logs**: `MentoringPlatform/Server/server.log`
-- **Client Logs**: `MentoringPlatform/Client/client.log`
+- **Server Logs**: `Server/server-logs/server.log`
+- **Client Logs**: `Server/server-logs/client.log`
+- **Database Setup Logs**: `Server/server-logs/db-setup.log`
 
 ---
 
@@ -190,22 +203,22 @@ npm start
 
 ### Server Fails to Start
 
-1. Check server logs: `MentoringPlatform/Server/server.log`
+1. Check server logs: `Server/server-logs/server.log`
 2. Verify Java version: `java -version` (should be 17+)
 3. Verify Maven is installed: `mvn -version`
 4. Clean and rebuild:
    ```bash
-   cd MentoringPlatform/Server
+   cd Server
    mvn clean install
    ```
 
 ### Client Fails to Start
 
-1. Check client logs: `MentoringPlatform/Client/client.log`
+1. Check client logs: `Server/server-logs/client.log`
 2. Verify Node.js version: `node -version`
 3. Reinstall dependencies:
    ```bash
-   cd MentoringPlatform/Client
+   cd Client
    rm -rf node_modules package-lock.json
    npm install
    ```

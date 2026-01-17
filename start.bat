@@ -6,6 +6,10 @@ setlocal enabledelayedexpansion
 set SCRIPT_DIR=%~dp0
 set SERVER_DIR=%SCRIPT_DIR%Server
 set CLIENT_DIR=%SCRIPT_DIR%Client
+set LOGS_DIR=%SERVER_DIR%\server-logs
+
+REM Create server-logs directory if it doesn't exist
+if not exist "%LOGS_DIR%" mkdir "%LOGS_DIR%"
 
 echo ========================================
 echo   Mentoring Platform Startup Script
@@ -60,12 +64,12 @@ if "%USE_ANT%"=="true" (
     echo.
     echo Setting up database...
     cd /d "%SERVER_DIR%"
-    ant setup-db > db-setup.log 2>&1
+    ant setup-db > "%LOGS_DIR%\db-setup.log" 2>&1
     if %ERRORLEVEL% EQU 0 (
         echo Database setup completed
     ) else (
         echo Warning: Database setup had issues. Continuing anyway...
-        echo Check db-setup.log for details
+        echo Check Server\server-logs\db-setup.log for details
     )
     cd /d "%SCRIPT_DIR%"
     echo.
@@ -92,16 +96,15 @@ echo Starting Spring Boot Server...
 cd /d "%SERVER_DIR%"
 
 REM Clear previous log
-type nul > server.log
+type nul > "%LOGS_DIR%\server.log"
 
-start "Mentoring Platform Server" cmd /c "mvn spring-boot:run > server.log 2>&1"
+start "Mentoring Platform Server" cmd /c "mvn spring-boot:run > "%LOGS_DIR%\server.log" 2>&1"
 
 REM Wait for server to start
-echo Waiting for server to start...
 timeout /t 8 /nobreak >nul
 
 REM Check if server started successfully by checking logs for errors
-findstr /i "Connection to localhost:5432 refused" server.log >nul 2>nul
+findstr /i "Connection to localhost:5432 refused" "%LOGS_DIR%\server.log" >nul 2>nul
 if %ERRORLEVEL% EQU 0 (
     echo Error: Server failed to connect to PostgreSQL
     echo.
@@ -110,12 +113,12 @@ if %ERRORLEVEL% EQU 0 (
     echo   - Verify database 'mentoringdb' exists
     echo   - Check connection settings in application.properties
     echo.
-    echo Server logs: %SERVER_DIR%\server.log
+    echo Server logs: Server\server-logs\server.log
     exit /b 1
 )
 
 echo   Server started
-echo   Server logs: %SERVER_DIR%\server.log
+echo   Server logs: Server\server-logs\server.log
 echo   Server URL: http://localhost:8080
 echo.
 
@@ -129,13 +132,13 @@ if not exist "node_modules" (
     call npm install
 )
 
-start "Mentoring Platform Client" cmd /c "npm start > client.log 2>&1"
+start "Mentoring Platform Client" cmd /c "npm start > "%LOGS_DIR%\client.log" 2>&1"
 
 REM Wait a bit for client to start
 timeout /t 3 /nobreak >nul
 
 echo   Client started
-echo   Client logs: %CLIENT_DIR%\client.log
+echo   Client logs: Server\server-logs\client.log
 echo   Client URL: http://localhost:3000
 echo.
 

@@ -76,16 +76,19 @@ else
     echo -e "${GREEN}✓ Ant found${NC}"
 fi
 
+# Create server-logs directory if it doesn't exist
+mkdir -p "$SERVER_DIR/server-logs"
+
 # Setup Database using Ant
 if [ "$USE_ANT" = true ]; then
     echo ""
     echo -e "${BLUE}Setting up database...${NC}"
     cd "$SERVER_DIR"
-    if ant setup-db 2>&1 | tee -a db-setup.log; then
+    if ant setup-db 2>&1 | tee -a "$SERVER_DIR/server-logs/db-setup.log"; then
         echo -e "${GREEN}✓ Database setup completed${NC}"
     else
         echo -e "${YELLOW}⚠ Database setup had issues. Continuing anyway...${NC}"
-        echo -e "${YELLOW}  Check db-setup.log for details${NC}"
+        echo -e "${YELLOW}  Check Server/server-logs/db-setup.log for details${NC}"
     fi
     cd "$SCRIPT_DIR"
     echo ""
@@ -145,9 +148,9 @@ echo -e "${BLUE}Starting Spring Boot Server...${NC}"
 cd "$SERVER_DIR"
 
 # Clean previous log
-> server.log
+> "$SERVER_DIR/server-logs/server.log"
 
-mvn spring-boot:run > server.log 2>&1 &
+mvn spring-boot:run > "$SERVER_DIR/server-logs/server.log" 2>&1 &
 SERVER_PID=$!
 
 # Wait for server to start and check for errors
@@ -157,7 +160,7 @@ sleep 8
 # Check if server is running
 if ps -p $SERVER_PID > /dev/null; then
     # Check logs for database connection errors
-    if grep -q "Connection to localhost:5432 refused" "$SERVER_DIR/server.log" 2>/dev/null; then
+    if grep -q "Connection to localhost:5432 refused" "$SERVER_DIR/server-logs/server.log" 2>/dev/null; then
         echo -e "${RED}✗ Server failed to connect to PostgreSQL${NC}"
         echo -e "${RED}  Error: Connection to localhost:5432 refused${NC}"
         echo ""
@@ -170,24 +173,24 @@ if ps -p $SERVER_PID > /dev/null; then
         echo "  macOS: brew services start postgresql@14"
         echo "  Linux: sudo systemctl start postgresql"
         echo ""
-        echo -e "${RED}Server logs: $SERVER_DIR/server.log${NC}"
+        echo -e "${RED}Server logs: Server/server-logs/server.log${NC}"
         kill $SERVER_PID 2>/dev/null
         exit 1
     fi
     
     echo -e "${GREEN}✓ Server started (PID: $SERVER_PID)${NC}"
-    echo -e "${GREEN}  Server logs: $SERVER_DIR/server.log${NC}"
+    echo -e "${GREEN}  Server logs: Server/server-logs/server.log${NC}"
     echo -e "${GREEN}  Server URL: http://localhost:8080${NC}"
 else
     echo -e "${RED}✗ Server failed to start${NC}"
     echo ""
     # Show last few lines of error log
-    if [ -f "$SERVER_DIR/server.log" ]; then
+    if [ -f "$SERVER_DIR/server-logs/server.log" ]; then
         echo -e "${YELLOW}Last error from server.log:${NC}"
-        tail -20 "$SERVER_DIR/server.log" | grep -i "error\|exception\|failed" | tail -5
+        tail -20 "$SERVER_DIR/server-logs/server.log" | grep -i "error\|exception\|failed" | tail -5
     fi
     echo ""
-    echo -e "${RED}Full server logs: $SERVER_DIR/server.log${NC}"
+    echo -e "${RED}Full server logs: Server/server-logs/server.log${NC}"
     exit 1
 fi
 
@@ -203,7 +206,7 @@ if [ ! -d "node_modules" ]; then
     npm install
 fi
 
-npm start > client.log 2>&1 &
+npm start > "$SERVER_DIR/server-logs/client.log" 2>&1 &
 CLIENT_PID=$!
 
 # Wait a bit for client to start
@@ -212,10 +215,10 @@ sleep 3
 # Check if client is running
 if ps -p $CLIENT_PID > /dev/null; then
     echo -e "${GREEN}✓ Client started (PID: $CLIENT_PID)${NC}"
-    echo -e "${GREEN}  Client logs: $CLIENT_DIR/client.log${NC}"
+    echo -e "${GREEN}  Client logs: Server/server-logs/client.log${NC}"
     echo -e "${GREEN}  Client URL: http://localhost:3000${NC}"
 else
-    echo -e "${RED}✗ Client failed to start. Check logs: $CLIENT_DIR/client.log${NC}"
+    echo -e "${RED}✗ Client failed to start. Check logs: Server/server-logs/client.log${NC}"
     kill $SERVER_PID 2>/dev/null
     exit 1
 fi
