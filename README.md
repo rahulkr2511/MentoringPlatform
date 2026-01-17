@@ -116,13 +116,23 @@ start.bat
 ```
 
 The scripts will:
+- **Automatically check and install dependencies**:
+  - System dependencies (Java, Maven, Node.js, npm) - attempts auto-install on macOS via Homebrew
+  - npm dependencies for root package (concurrently)
+  - npm dependencies for Client (React and all packages)
+  - Maven dependencies (verified and downloaded automatically)
 - **Automatically set up the database** (using Ant build script or `start-postgres.sh`)
 - Check if PostgreSQL is running (with helpful error messages if not)
 - Create database `mentoringdb` if it doesn't exist
 - Start the Spring Boot server on `http://localhost:8080`
 - Start the React client on `http://localhost:3000`
-- Install client dependencies if needed
 - Display logs and status information
+
+**Dependency Management**: 
+- **macOS**: Scripts attempt to auto-install missing system dependencies via Homebrew
+- **Linux/Windows**: Provides installation instructions for missing dependencies
+- **npm packages**: Automatically installed if `node_modules` is missing
+- **Maven packages**: Automatically downloaded by Maven on first run
 
 **Database Setup**: The scripts automatically handle database setup:
 - If **Ant is installed**: Uses `ant setup-db` for comprehensive database setup

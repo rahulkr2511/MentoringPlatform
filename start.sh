@@ -38,33 +38,121 @@ cleanup() {
 # Set trap to cleanup on script exit
 trap cleanup SIGINT SIGTERM EXIT
 
-# Check if Java is installed
-if ! command -v java &> /dev/null; then
-    echo -e "${RED}Error: Java is not installed or not in PATH${NC}"
-    echo "Please install Java JDK 17 or higher"
-    exit 1
-fi
+# Function to check and install system dependencies
+check_and_install_dependencies() {
+    local missing_deps=()
+    
+    # Check Java
+    if ! command -v java &> /dev/null; then
+        missing_deps+=("Java JDK 17+")
+        echo -e "${YELLOW}⚠ Java is not installed${NC}"
+        
+        # Try to install Java on macOS
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            if command -v brew &> /dev/null; then
+                echo -e "${BLUE}Attempting to install Java via Homebrew...${NC}"
+                if brew install openjdk@17 2>/dev/null || brew install openjdk 2>/dev/null; then
+                    echo -e "${GREEN}✓ Java installed successfully${NC}"
+                    export JAVA_HOME=$(/usr/libexec/java_home)
+                else
+                    echo -e "${RED}Failed to install Java automatically${NC}"
+                    echo "Please install manually: brew install openjdk@17"
+                    return 1
+                fi
+            else
+                echo "Please install Java: brew install openjdk@17"
+                return 1
+            fi
+        else
+            echo "Please install Java JDK 17 or higher"
+            return 1
+        fi
+    else
+        JAVA_VERSION=$(java -version 2>&1 | head -n 1 | cut -d'"' -f2 | sed '/^1\./s///' | cut -d'.' -f1)
+        if [ "$JAVA_VERSION" -lt 17 ] 2>/dev/null; then
+            echo -e "${YELLOW}⚠ Java version is less than 17. Current: $JAVA_VERSION${NC}"
+            echo "Please upgrade to Java 17 or higher"
+            return 1
+        fi
+        echo -e "${GREEN}✓ Java found (version: $(java -version 2>&1 | head -n 1))${NC}"
+    fi
+    
+    # Check Maven
+    if ! command -v mvn &> /dev/null; then
+        missing_deps+=("Maven 3.8.0+")
+        echo -e "${YELLOW}⚠ Maven is not installed${NC}"
+        
+        # Try to install Maven on macOS
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            if command -v brew &> /dev/null; then
+                echo -e "${BLUE}Attempting to install Maven via Homebrew...${NC}"
+                if brew install maven; then
+                    echo -e "${GREEN}✓ Maven installed successfully${NC}"
+                else
+                    echo -e "${RED}Failed to install Maven automatically${NC}"
+                    echo "Please install manually: brew install maven"
+                    return 1
+                fi
+            else
+                echo "Please install Maven: brew install maven"
+                return 1
+            fi
+        else
+            echo "Please install Maven 3.8.0 or higher"
+            return 1
+        fi
+    else
+        echo -e "${GREEN}✓ Maven found (version: $(mvn -version | head -n 1))${NC}"
+    fi
+    
+    # Check Node.js
+    if ! command -v node &> /dev/null; then
+        missing_deps+=("Node.js")
+        echo -e "${YELLOW}⚠ Node.js is not installed${NC}"
+        
+        # Try to install Node.js on macOS
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            if command -v brew &> /dev/null; then
+                echo -e "${BLUE}Attempting to install Node.js via Homebrew...${NC}"
+                if brew install node; then
+                    echo -e "${GREEN}✓ Node.js installed successfully${NC}"
+                else
+                    echo -e "${RED}Failed to install Node.js automatically${NC}"
+                    echo "Please install manually: brew install node"
+                    return 1
+                fi
+            else
+                echo "Please install Node.js: brew install node"
+                return 1
+            fi
+        else
+            echo "Please install Node.js from https://nodejs.org/"
+            return 1
+        fi
+    else
+        echo -e "${GREEN}✓ Node.js found (version: $(node -v))${NC}"
+    fi
+    
+    # Check npm
+    if ! command -v npm &> /dev/null; then
+        missing_deps+=("npm")
+        echo -e "${YELLOW}⚠ npm is not installed${NC}"
+        echo "npm usually comes with Node.js. Please reinstall Node.js"
+        return 1
+    else
+        echo -e "${GREEN}✓ npm found (version: $(npm -v))${NC}"
+    fi
+    
+    return 0
+}
 
-# Check if Maven is installed
-if ! command -v mvn &> /dev/null; then
-    echo -e "${RED}Error: Maven is not installed or not in PATH${NC}"
-    echo "Please install Maven 3.8.0 or higher"
+# Check and install system dependencies
+echo -e "${BLUE}Checking system dependencies...${NC}"
+if ! check_and_install_dependencies; then
+    echo -e "${RED}✗ Some dependencies are missing. Please install them and try again.${NC}"
     exit 1
 fi
-
-# Check if Node.js is installed
-if ! command -v node &> /dev/null; then
-    echo -e "${RED}Error: Node.js is not installed or not in PATH${NC}"
-    echo "Please install Node.js"
-    exit 1
-fi
-
-# Check if npm is installed
-if ! command -v npm &> /dev/null; then
-    echo -e "${RED}Error: npm is not installed or not in PATH${NC}"
-    echo "Please install npm"
-    exit 1
-fi
+echo ""
 
 # Check if Ant is installed (for database setup)
 if ! command -v ant &> /dev/null; then
@@ -79,6 +167,56 @@ fi
 # Create log directories if they don't exist
 mkdir -p "$SERVER_DIR/server-logs"
 mkdir -p "$CLIENT_DIR/client-logs"
+
+# Install npm dependencies
+echo -e "${BLUE}Checking and installing npm dependencies...${NC}"
+
+# Install root dependencies (concurrently for npm scripts)
+if [ -f "$SCRIPT_DIR/package.json" ]; then
+    if [ ! -d "$SCRIPT_DIR/node_modules" ]; then
+        echo -e "${YELLOW}Installing root dependencies (concurrently)...${NC}"
+        cd "$SCRIPT_DIR"
+        npm install
+        if [ $? -ne 0 ]; then
+            echo -e "${RED}✗ Failed to install root dependencies${NC}"
+            exit 1
+        fi
+        echo -e "${GREEN}✓ Root dependencies installed${NC}"
+    else
+        echo -e "${GREEN}✓ Root dependencies already installed${NC}"
+    fi
+fi
+
+# Install client dependencies
+if [ -f "$CLIENT_DIR/package.json" ]; then
+    if [ ! -d "$CLIENT_DIR/node_modules" ]; then
+        echo -e "${YELLOW}Installing client dependencies...${NC}"
+        cd "$CLIENT_DIR"
+        npm install
+        if [ $? -ne 0 ]; then
+            echo -e "${RED}✗ Failed to install client dependencies${NC}"
+            exit 1
+        fi
+        echo -e "${GREEN}✓ Client dependencies installed${NC}"
+    else
+        echo -e "${GREEN}✓ Client dependencies already installed${NC}"
+    fi
+fi
+
+# Check Maven dependencies (Maven will download automatically, but we can verify)
+echo -e "${BLUE}Checking Maven dependencies...${NC}"
+cd "$SERVER_DIR"
+if [ -f "pom.xml" ]; then
+    echo -e "${YELLOW}Verifying Maven dependencies (this may take a moment)...${NC}"
+    mvn dependency:resolve -q > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✓ Maven dependencies ready${NC}"
+    else
+        echo -e "${YELLOW}⚠ Maven will download dependencies on first run${NC}"
+    fi
+fi
+cd "$SCRIPT_DIR"
+echo ""
 
 # Setup Database using Ant
 if [ "$USE_ANT" = true ]; then
@@ -201,10 +339,15 @@ echo ""
 echo -e "${BLUE}Starting React Client...${NC}"
 cd "$CLIENT_DIR"
 
-# Check if node_modules exists, if not install dependencies
+# Dependencies should already be installed, but double-check
 if [ ! -d "node_modules" ]; then
-    echo -e "${YELLOW}Installing client dependencies...${NC}"
+    echo -e "${YELLOW}Client dependencies missing, installing...${NC}"
     npm install
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}✗ Failed to install client dependencies${NC}"
+        kill $SERVER_PID 2>/dev/null
+        exit 1
+    fi
 fi
 
 npm start > "$CLIENT_DIR/client-logs/client.log" 2>&1 &
