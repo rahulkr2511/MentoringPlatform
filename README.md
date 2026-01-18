@@ -17,9 +17,11 @@ It combines **WebRTC**, **WebSocket signaling**, and **role-based user managemen
 
 Watch the platform in action:
 
-<video src="Documentation/Demo-Mentoring-Platform.mp4" controls width="100%">
-  Your browser does not support the video tag. You can [download the video](Documentation/Demo-Mentoring-Platform.mp4) instead.
-</video>
+<div align="center">
+  <video src="https://github.com/rahulkr2511/MentoringPlatform/blob/main/Documentation/Demo-Mentoring-Platform.mp4" width="100%" controls autoplay muted loop>
+   Your browser does not support the video tag. You can [download the video](Documentation/Demo-Mentoring-Platform.mp4) instead.
+   </video>
+</div>
 
 ---
 
