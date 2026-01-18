@@ -11,6 +11,18 @@ It combines **WebRTC**, **WebSocket signaling**, and **role-based user managemen
 
 ---
 
+---
+
+## 🎬 Demo
+
+Watch the platform in action:
+
+<video src="Documentation/Demo-Mentoring-Platform.mp4" controls width="100%">
+  Your browser does not support the video tag. You can [download the video](Documentation/Demo-Mentoring-Platform.mp4) instead.
+</video>
+
+---
+
 ## 🚀 Why MentoringPlatform?
 This project aims to streamline the creation of **interactive, scalable mentoring environments**.  
 The core features include:
@@ -21,7 +33,6 @@ The core features include:
 - 🌐 **Signaling & Communication**: Utilizes WebSocket signaling to coordinate real-time data exchange and session control.  
 - 🧱 **Modular Architecture**: Built with **React frontend** and **Spring Boot backend**, ensuring scalability and ease of future enhancements.  
 
----
 
 ## 📚 Documentation
 
