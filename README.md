@@ -22,8 +22,6 @@ Watch the platform in action:
 [![Watch the demo video](https://img.shields.io/badge/🎬-Watch%20Demo%20Video-FF6B6B?style=for-the-badge&logo=github)](https://github.com/rahulkr2511/MentoringPlatform/raw/main/Documentation/Demo-Mentoring-Platform.mp4)
 
 **Click the button above to watch the demo video**  
-*Or [download directly](Documentation/Demo-Mentoring-Platform.mp4)*
-
 </div>
 
 ---
