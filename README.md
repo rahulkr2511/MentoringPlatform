@@ -18,9 +18,12 @@ It combines **WebRTC**, **WebSocket signaling**, and **role-based user managemen
 Watch the platform in action:
 
 <div align="center">
-  <video src="https://github.com/rahulkr2511/MentoringPlatform/blob/main/Documentation/Demo-Mentoring-Platform.mp4" width="100%" controls autoplay muted loop>
-   Your browser does not support the video tag. You can [download the video](Documentation/Demo-Mentoring-Platform.mp4) instead.
-   </video>
+
+[![Watch the demo video](https://img.shields.io/badge/🎬-Watch%20Demo%20Video-FF6B6B?style=for-the-badge&logo=github)](https://github.com/rahulkr2511/MentoringPlatform/raw/main/Documentation/Demo-Mentoring-Platform.mp4)
+
+**Click the button above to watch the demo video**  
+*Or [download directly](Documentation/Demo-Mentoring-Platform.mp4)*
+
 </div>
 
 ---
