@@ -5,6 +5,12 @@
 > Empowering Connections, Accelerating Growth Seamlessly  
 ---
 
+<div align="center">
+
+![MentoringPlatform Preview](https://raw.githubusercontent.com/rahulkr2511/MentoringPlatform/main/Documentation/preview-mentoring-platform.png)
+
+</div>
+
 ## 📖 Overview
 MentoringPlatform is a comprehensive developer tool designed to facilitate **secure, real-time video mentoring** within modern web applications.  
 It combines **WebRTC**, **WebSocket signaling**, and **role-based user management** to deliver seamless remote mentorship experiences.
