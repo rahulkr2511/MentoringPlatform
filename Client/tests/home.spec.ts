@@ -23,3 +23,4 @@ test('sign up from login shows create account', async ({ page }) => {
   await page.getByRole('button', { name: 'Sign up' }).click();
   await expect(page.getByRole('button', { name: 'Create Account' })).toBeVisible();
 });
+
