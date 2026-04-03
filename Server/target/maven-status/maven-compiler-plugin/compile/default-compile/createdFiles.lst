@@ -9,6 +9,7 @@ com/mentoringplatform/server/dto/MentorDetailsResponse.class
 com/mentoringplatform/server/service/NotificationService.class
 com/mentoringplatform/server/repository/UserRepository.class
 com/mentoringplatform/server/dto/AuthRequest.class
+com/mentoringplatform/server/controller/SignalingController.class
 com/mentoringplatform/server/service/SessionService.class
 com/mentoringplatform/server/model/PushSubscription.class
 com/mentoringplatform/server/service/PushSubscriptionService.class
@@ -25,10 +26,13 @@ com/mentoringplatform/server/repository/UserNotificationRepository.class
 com/mentoringplatform/server/dto/WebPushRequest.class
 com/mentoringplatform/server/repository/AvailabilityRepository.class
 com/mentoringplatform/server/service/AvailabilityService$3.class
+com/mentoringplatform/server/config/WebSocketConfig.class
 com/mentoringplatform/server/security/UserPrincipal.class
 com/mentoringplatform/server/controller/PushSubscriptionController.class
+com/mentoringplatform/server/dto/ChatMessage.class
 com/mentoringplatform/server/exception/UserAlreadyExistsException.class
 com/mentoringplatform/server/service/MentorService.class
+com/mentoringplatform/server/dto/SignalMessage.class
 com/mentoringplatform/server/dto/SignupResponse.class
 com/mentoringplatform/server/controller/NotificationController.class
 com/mentoringplatform/server/service/AvailabilityService.class
@@ -46,6 +50,7 @@ com/mentoringplatform/server/model/UserNotification$NotificationType.class
 com/mentoringplatform/server/dto/ProfileResponse.class
 com/mentoringplatform/server/dto/PushSubscriptionRequest$PushSubscriptionKeys.class
 com/mentoringplatform/server/dto/ApiResponse.class
+com/mentoringplatform/server/controller/ChatController.class
 com/mentoringplatform/server/exception/GlobalExceptionHandler.class
 com/mentoringplatform/server/security/JwtTokenProvider.class
 com/mentoringplatform/server/service/PushNotificationDispatcher$SessionJoinPayload.class

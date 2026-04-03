@@ -31,8 +31,7 @@ export class ChatService {
 
     return new Promise((resolve) => {
       console.log('Creating SockJS connection...');
-      const socket = new SockJS(WS_BASE_URL);
-      this.stompClient = Stomp.over(socket);
+      this.stompClient = Stomp.over(() => new SockJS(WS_BASE_URL));
 
       // Add authorization header
       const token = localStorage.getItem('token');

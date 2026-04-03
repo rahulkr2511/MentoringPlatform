@@ -13,7 +13,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestControllerAdvice
+/**
+ * Only applies to REST controllers under {@code com.mentoringplatform.server.controller}.
+ * SockJS ({@code /ws/**}) and other non-{@code HandlerMethod} dispatch targets must not use these
+ * handlers — otherwise failures are turned into API JSON and break SockJS {@code /ws/info} parsing.
+ */
+@RestControllerAdvice(basePackages = "com.mentoringplatform.server.controller")
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)

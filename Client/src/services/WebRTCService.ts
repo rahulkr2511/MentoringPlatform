@@ -93,8 +93,8 @@ export class WebRTCService {
     }
 
     return new Promise((resolve) => {
-      const socket = new SockJS(WS_BASE_URL);
-      this.stompClient = Stomp.over(socket);
+      // @stomp/stompjs v7: pass a factory so reconnect works; passing a SockJS instance only warns and breaks retries.
+      this.stompClient = Stomp.over(() => new SockJS(WS_BASE_URL));
       // Reduce noisy logs from stomp - set to no-op function (must be a function)
       (this.stompClient as any).debug = () => {};
 
