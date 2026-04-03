@@ -138,8 +138,12 @@ This document provides a comprehensive analysis of the Mentoring Platform applic
 - Session validation and ownership checks
 
 ### CORS Configuration
-- Cross-origin support for development
-- WebSocket security with authentication
+- **Spring Security CORS** (`SecurityConfig`): `http.cors()` with a `CorsConfigurationSource` so cross-origin requests (including SockJS `GET /ws/info`) receive `Access-Control-*` headers. SockJS uses XHR with `withCredentials`, so allowed origins must be **explicit** (e.g. `http://localhost:3000`, `http://127.0.0.1:3000`); `allowCredentials(true)` cannot be combined with `allowedHeaders("*")` in Spring (use a fixed header list).
+- **STOMP endpoint** (`WebSocketConfig`): `setAllowedOriginPatterns` matches the same dev origins as security CORS.
+- **REST controllers** continue to use `@CrossOrigin` where declared.
+- **`/error` permitted**: Spring Boot’s error dispatch is `permitAll()` so failed SockJS (or other) requests are not turned into 403 after security.
+- **API exception handling**: `GlobalExceptionHandler` is scoped with `@RestControllerAdvice(basePackages = "com.mentoringplatform.server.controller")` so SockJS/WebSocket servlet paths are not wrapped in `ApiResponse` JSON (which breaks SockJS parsing).
+- **Build hygiene**: After removing or renaming config classes, run `mvn clean compile` in `Server` so stale `.class` files under `target/classes` do not load at runtime.
 
 ## Frontend Architecture
 

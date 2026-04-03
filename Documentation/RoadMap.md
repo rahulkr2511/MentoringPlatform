@@ -32,7 +32,7 @@ The Mentoring Platform is a comprehensive web-based application that facilitates
   - JWT-based authentication with Spring Security
   - BCrypt password hashing
   - Role-based authorization with @PreAuthorize
-  - CORS configuration for cross-origin support
+  - CORS configuration for cross-origin support (Spring Security + `WebSocketConfig`; documented in Design Summary / HLD §6.3)
 
 - **Controllers**
   - **AuthController**: User registration, login, current user

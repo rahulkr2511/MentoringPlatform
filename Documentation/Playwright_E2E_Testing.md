@@ -147,7 +147,7 @@ When `CI` is set:
 
 ## Troubleshooting
 
-- **Auth tests fail with network or 4xx/5xx**: Confirm the Spring app is up, CORS is acceptable for `localhost:3000`, and the DB matches `application.properties` (user, database name, Postgres running). A local `psql` “role does not exist” error means your OS user or Postgres roles do not match that file — align credentials or use the commented H2 profile for isolated runs.
+- **Auth tests fail with network or 4xx/5xx**: Confirm the Spring app is up, CORS and SockJS settings allow the client origin (default dev: `http://localhost:3000` vs API on `:8080`; see `SecurityConfig` / `WebSocketConfig`), and the DB matches `application.properties` (user, database name, Postgres running). A local `psql` “role does not exist” error means your OS user or Postgres roles do not match that file — align credentials or use the commented H2 profile for isolated runs.
 - **Flaky timing**: Increase timeouts in the spec or stabilize the app (e.g. wait for specific API responses — `auth.spec.ts` already waits for signup/login responses).
 - **Wrong API host in tests**: Set `REACT_APP_API_BASE_URL` before `npm run start` / Playwright so the bundle points at the correct server.
 

@@ -177,8 +177,10 @@ Client A ← WebSocket ← ChatController ← WebSocket ← Client B
 - **Session Validation**: Users can only access their own sessions
 
 ### 6.3 CORS Configuration
-- **Cross-origin Support**: Configured for development and production
-- **WebSocket Security**: STOMP over WebSocket with authentication
+- **Spring Security**: CORS enabled via `CorsConfigurationSource` on the filter chain; dev origins align with the React dev server (`http://localhost:3000`, `http://127.0.0.1:3000`). SockJS cross-origin XHR uses credentials, so configuration follows browser rules (no `*` origin with credentials; explicit allowed headers instead of `*` when credentials are true).
+- **STOMP / SockJS** (`WebSocketConfig`): Endpoint `/ws` uses matching allowed origin patterns.
+- **Error dispatch**: `/error` is anonymously accessible so Boot’s error handling is not blocked by JWT rules.
+- **Exception advice**: `GlobalExceptionHandler` applies only to the REST `controller` package so `/ws/**` responses are not replaced with API error JSON.
 
 ## 7. API Endpoints
 

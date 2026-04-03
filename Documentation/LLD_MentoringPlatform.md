@@ -287,7 +287,7 @@ public class WebSocketConfig {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*")
+                .setAllowedOriginPatterns("http://localhost:3000", "http://127.0.0.1:3000")
                 .withSockJS();
     }
     
@@ -407,8 +407,8 @@ export class ChatService {
     private onMessageReceived: ((message: ChatMessage) => void) | null = null;
 
     public async connect(sessionId: string, username: string): Promise<boolean> {
-        const socket = new SockJS('http://localhost:8080/ws');
-        this.stompClient = Stomp.over(socket);
+        // @stomp/stompjs v7: pass a factory for reconnect support
+        this.stompClient = Stomp.over(() => new SockJS('http://localhost:8080/ws'));
         
         return new Promise((resolve) => {
             this.stompClient?.connect({}, () => {
@@ -781,39 +781,42 @@ public class JwtTokenProvider {
 ```
 
 ### 7.2 Security Configuration
+CORS is applied on the security filter chain; SockJS `/ws/**` and Spring Boot `/error` are permitted without authentication. Example (see `SecurityConfig.java` for the full chain and JWT filter):
+
 ```java
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-    
+
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOriginPatterns(List.of("http://localhost:3000", "http://127.0.0.1:3000"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"));
+        configuration.setAllowedHeaders(Arrays.asList(
+                "Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With",
+                "Access-Control-Request-Method", "Access-Control-Request-Headers"));
+        configuration.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
         http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/monitoringPlatform/auth/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
-                .anyRequest().authenticated()
-            )
+                .requestMatchers("/error", "/error/**").permitAll()
+                // ... other authenticated routes ...
+                .anyRequest().authenticated())
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-        
         return http.build();
-    }
-    
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true);
-        
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
     }
 }
 ```
@@ -821,36 +824,9 @@ public class SecurityConfig {
 ## 8. Error Handling
 
 ### 8.1 Global Exception Handler
-```java
-@ControllerAdvice
-public class GlobalExceptionHandler {
-    
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<String>> handleGlobalException(Exception ex) {
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("An unexpected error occurred: " + ex.getMessage()));
-    }
-    
-    @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<ApiResponse<String>> handleUserAlreadyExists(UserAlreadyExistsException ex) {
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(ApiResponse.error(ex.getMessage()));
-    }
-    
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<String>> handleValidationErrors(MethodArgumentNotValidException ex) {
-        String errorMessage = ex.getBindingResult().getFieldErrors().stream()
-                .map(FieldError::getDefaultMessage)
-                .collect(Collectors.joining(", "));
-        
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error("Validation failed: " + errorMessage));
-    }
-}
-```
+`GlobalExceptionHandler` uses `@RestControllerAdvice(basePackages = "com.mentoringplatform.server.controller")` so it applies only to REST controllers under that package. **SockJS** (`/ws/info`, etc.) and other non–REST-controller dispatch targets must not be handled here: returning `ApiResponse` JSON for those paths breaks SockJS’s expected response shape.
+
+The implementation uses `@RestControllerAdvice`, typed `ApiResponse<Void>` (and maps) where appropriate, and handlers for validation, auth, domain, and generic exceptions—see `GlobalExceptionHandler.java` for the current methods.
 
 ### 8.2 Frontend Error Handling
 ```typescript

@@ -253,6 +253,19 @@ npm start
    npm install
    ```
 
+### WebSocket / SockJS / CORS (local dev)
+
+If the client on **http://localhost:3000** cannot connect to the API/WebSocket on **http://localhost:8080** (browser CORS errors, `GET /ws/info` failing, or SockJS closing immediately):
+
+1. **Rebuild the server cleanly** so no stale classes remain under `Server/target/classes`:
+   ```bash
+   cd Server
+   mvn clean compile
+   ```
+   Then restart the server (`./start.sh` or `mvn spring-boot:run`).
+
+2. **Configuration** (see `Documentation/Design_Summary.md` or `HLD_MentoringPlatform.md` §6.3): Spring Security CORS, `WebSocketConfig` origins, scoped `GlobalExceptionHandler`, and anonymous access to `/error` are set up for this cross-origin dev layout. If you change the client port or host, update allowed origins in `SecurityConfig` and `WebSocketConfig` to match.
+
 ### Port Already in Use
 
 If port 8080 or 3000 is already in use:

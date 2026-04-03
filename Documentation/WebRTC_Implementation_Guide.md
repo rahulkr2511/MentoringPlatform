@@ -36,8 +36,7 @@ const initializeCall = async () => {
 ```typescript
 // In WebRTCService.ts
 public async connect(username: string, sessionId: string, targetUser: string): Promise<boolean> {
-  const socket = new SockJS('http://localhost:8080/ws');
-  this.stompClient = Stomp.over(socket);
+  this.stompClient = Stomp.over(() => new SockJS('http://localhost:8080/ws'));
   
   this.stompClient.connect({}, () => {
     // Subscribe to personal signaling topic
@@ -403,7 +402,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*")
+                .setAllowedOriginPatterns("http://localhost:3000", "http://127.0.0.1:3000")
                 .withSockJS();
     }
     
@@ -417,9 +416,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 ### **Frontend Connection**
 ```typescript
-// Connect to WebSocket endpoint
-const socket = new SockJS('http://localhost:8080/ws');
-this.stompClient = Stomp.over(socket);
+// Connect to WebSocket endpoint (@stomp/stompjs v7: use a socket factory for reconnect)
+this.stompClient = Stomp.over(() => new SockJS('http://localhost:8080/ws'));
 
 // Subscribe to personal topic
 this.stompClient?.subscribe(`/topic/signal/${username}`, (msg) => {
@@ -641,10 +639,12 @@ The system successfully establishes direct peer-to-peer connections for efficien
 - Check browser permissions
 - Verify device availability
 
-**2. WebSocket Connection Failed**
-- Check server is running on port 8080
-- Verify CORS configuration
-- Check firewall settings
+**2. WebSocket / SockJS Connection Failed**
+- Check server is running on port 8080 and the client uses the same API/WebSocket base URL (e.g. `Client/src/config/env.js`).
+- **CORS / SockJS**: Security CORS and `WebSocketConfig` allowed origins must include the React origin (default dev: `http://localhost:3000`). SockJS uses credentialed XHR for `/ws/info`; align `allowCredentials` and explicit origins/headers in `SecurityConfig`.
+- **`/ws/info` returns API JSON** (`success` / `error` fields): usually means `GlobalExceptionHandler` was applied to a non-REST path—ensure `@RestControllerAdvice` is limited to `com.mentoringplatform.server.controller` and `/error` is `permitAll()` in security.
+- **Stale build**: run `mvn clean compile` in `Server` so old `target/classes` config beans are not loaded.
+- Check firewall / proxy settings.
 
 **3. ICE Connection Failed**
 - Verify STUN servers are accessible
