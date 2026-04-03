@@ -15,6 +15,13 @@
   padding: 4rem 0;
 }
 
+.home-brand-logo {
+  display: block;
+  margin: 0 auto 1.5rem;
+  max-height: 128px;
+  width: auto;
+}
+
 .home-header h1 {
   font-size: 3.5rem;
   margin-bottom: 1rem;

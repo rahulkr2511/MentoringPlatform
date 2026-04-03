@@ -1,11 +1,23 @@
 import React from 'react';
+import ResponsiveImage from './ResponsiveImage';
 import '../styles/Home.css';
+
+const publicUrl = process.env.PUBLIC_URL || '';
+const logoSrc = `${publicUrl}/logo.png`;
 
 const Home = ({ onGetStarted }) => {
   return (
     <div className="home">
       <div className="home-container">
         <header className="home-header">
+          <ResponsiveImage
+            src={logoSrc}
+            alt="PeerNest Mentoring"
+            width={2772}
+            height={1504}
+            loading="eager"
+            className="home-brand-logo"
+          />
           <h1>Welcome to PeerNest Mentoring</h1>
           <p>Connect, Learn, and Grow with Expert Mentors</p>
         </header>

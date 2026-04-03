@@ -59,8 +59,8 @@ self.addEventListener('push', (event) => {
     },
     tag: notificationId || `${type || 'notification'}-${Date.now()}`,
     renotify: false,
-    badge: '/logo192.png',
-    icon: '/logo192.png',
+    badge: '/logo.png',
+    icon: '/logo.png',
   };
 
   if (channel) {
