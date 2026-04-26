@@ -49,10 +49,10 @@ Key items:
 2. Supply VAPID keys via secrets manager/env vars.
 3. Publish the public key to the React client build for service worker subscription.
 4. Provide secure JWT secrets and database credentials.
-5. Smoke-test `/sessions/{id}/presence/join` to ensure push events reach active browsers.
+5. Smoke-test `/monitoringPlatform/sessions/{sessionId}/presence/join` to ensure push events reach active browsers.
 
 ## Request Flow: Mentor/Mentee Join
-1. Video client calls `POST /sessions/{sessionId}/presence/join`.
+1. Video client calls `POST /monitoringPlatform/sessions/{sessionId}/presence/join`.
 2. Server validates actor, persists `user_notifications` entry, pushes to dispatcher.
 3. Dispatcher fetches mentor/mentee subscriptions and constructs payload (title/body/deep link).
 4. `VapidWebPushGateway` signs message with provided keys and posts to the browser endpoint; errors are logged and subscriptions are disabled if necessary.

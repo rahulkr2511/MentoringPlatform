@@ -9,7 +9,7 @@ The Mentoring Platform is a web-based application that facilitates 1-on-1 video 
 - **Session Management**: Booking, scheduling, and managing mentoring sessions
 - **Real-time Video Communication**: WebRTC-based peer-to-peer video calls with WebSocket signaling
 - **Real-time Chat Communication**: Session-based chat messaging with WebSocket
-- **Mentor Discovery**: Browse and filter mentors by expertise, availability, and ratings
+- **Mentor Discovery**: Browse and filter mentors by expertise and availability
 - **Availability Management**: Mentors can set their availability schedules
 - **Session History**: Track past and upcoming sessions
 - **Profile Management**: Mentors can manage their profiles with expertise, hourly rates, and descriptions
@@ -34,7 +34,7 @@ The Mentoring Platform is a web-based application that facilitates 1-on-1 video 
 ### 2.1 Frontend (React Client)
 - **Technology Stack**: React 19.1.0, TypeScript, SockJS, STOMP
 - **Key Components**:
-  - **App.js**: Main application with routing and authentication state
+  - **App.js**: Main application with view-state navigation and authentication state
   - **Login.jsx**: Authentication interface with signup/login forms
   - **MenteeDashboard.jsx**: Mentee-specific dashboard with mentor discovery and booking
   - **MentorDashboard.jsx**: Mentor-specific dashboard with session management and profile
@@ -55,7 +55,7 @@ The Mentoring Platform is a web-based application that facilitates 1-on-1 video 
   - **WebSocketConfig**: STOMP WebSocket configuration
 
 ### 2.3 Database (PostgreSQL)
-- **Schema**: Users, Sessions, Availability tables with JPA entities
+- **Schema**: Users, Sessions, Availability, PushSubscription, and UserNotification tables with JPA entities
 - **Relationships**: Many-to-many and one-to-many relationships
 
 ### 2.4 Real-time Communication
@@ -104,11 +104,11 @@ The Mentoring Platform is a web-based application that facilitates 1-on-1 video 
 
 ### 4.2 Session Booking Workflow
 ```
-1. Mentee browses available mentors via /mentors endpoint
-2. Mentee selects mentor and views availability via /sessions/availability
-3. Mentee selects time slot and books session via /sessions/book
+1. Mentee browses available mentors via `/monitoringPlatform/mentee/mentors` endpoint
+2. Mentee selects mentor and views availability via `/monitoringPlatform/sessions/availability`
+3. Mentee selects time slot and books session via `/monitoringPlatform/sessions/book`
 4. System creates session with PENDING status
-5. Mentor can update session status via /sessions/{id}/status
+5. Mentor can update session status via `/monitoringPlatform/sessions/{id}/status`
 6. Session status updated to CONFIRMED/REJECTED/COMPLETED
 ```
 
@@ -135,7 +135,7 @@ The Mentoring Platform is a web-based application that facilitates 1-on-1 video 
 3. Chat service connects to session-specific topic
 4. Real-time message exchange between participants
 5. Messages displayed with sender identification and timestamps
-6. Chat persists throughout the session duration
+6. Chat remains active during the session (messages are not persisted server-side)
 ```
 
 ## 5. Data Flow
@@ -192,13 +192,16 @@ Client A ← WebSocket ← ChatController ← WebSocket ← Client B
 ### 7.2 Session Management Endpoints
 - `POST /monitoringPlatform/sessions/book` - Book a session
 - `POST /monitoringPlatform/sessions/availability` - Get available slots
+- `GET /monitoringPlatform/sessions/availability/{mentorId}/summary` - Get mentor availability summary
 - `GET /monitoringPlatform/sessions/upcoming` - Get upcoming sessions
 - `GET /monitoringPlatform/sessions/history` - Get session history
 - `PUT /monitoringPlatform/sessions/{id}/status` - Update session status
 - `PUT /monitoringPlatform/sessions/{id}/cancel` - Cancel session
+- `POST /monitoringPlatform/sessions/{sessionId}/presence/join` - Record session join presence
 
 ### 7.3 Profile Management Endpoints
-- `GET /monitoringPlatform/mentors` - Get all mentors
+- `GET /monitoringPlatform/mentee/mentors` - Get available mentors
+- `GET /monitoringPlatform/mentee/mentors/all` - Get all mentors
 - `GET /monitoringPlatform/mentor/profile` - Get mentor profile
 - `PUT /monitoringPlatform/mentor/profile` - Update mentor profile
 

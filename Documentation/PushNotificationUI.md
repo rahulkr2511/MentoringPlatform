@@ -31,12 +31,11 @@ The push notification system in the UI consists of several key components:
 
 ```
 App
-├── NotificationProvider (Context Provider)
-│   └── useNotification Hook
-│       ├── Toast Notifications (in-memory)
-│       └── System Notifications (from server)
-│           ├── NotificationBell (unread count indicator)
-│           └── NotificationDrawer (notification list)
+├── NotificationProvider (uses useNotification internally)
+│   ├── Toast Notifications (in-memory)
+│   └── System Notifications (from server)
+│       ├── NotificationBell (unread count indicator)
+│       └── NotificationDrawer (notification list)
 └── Service Worker (background)
     └── BroadcastChannel (communication)
 ```
@@ -67,6 +66,7 @@ The service worker is registered in two places:
    ```javascript
    useEffect(() => {
      const token = localStorage.getItem('token');
+     const user = localStorage.getItem('user');
      if (token && user) {
        registerNotificationServiceWorker();
      }
@@ -431,19 +431,19 @@ When a user clicks on a browser notification:
 
 The hook uses the following API endpoints (via `notificationService.js`):
 
-1. **Fetch Notifications**: `GET /api/notifications`
+1. **Fetch Notifications**: `GET /monitoringPlatform/notifications`
    - Returns all notifications for current user
    - Used by `loadNotifications()`
 
-2. **Mark as Read**: `PUT /api/notifications/:id/read`
+2. **Mark as Read**: `PATCH /monitoringPlatform/notifications/{id}/read`
    - Marks single notification as read
    - Used by `markSystemNotificationRead()`
 
-3. **Mark All as Read**: `PUT /api/notifications/read-all`
+3. **Mark All as Read**: `POST /monitoringPlatform/notifications/mark-all-read`
    - Marks all notifications as read
    - Used by `markAllSystemNotificationsRead()`
 
-4. **Register Subscription**: `POST /api/notifications/subscribe`
+4. **Register Subscription**: `POST /monitoringPlatform/push-subscriptions`
    - Registers push subscription with server
    - Used by `registerSubscription()`
 

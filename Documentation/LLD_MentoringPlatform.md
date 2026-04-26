@@ -178,7 +178,7 @@ Response:
 
 #### 2.3.1 Get All Mentors
 ```http
-GET /monitoringPlatform/mentors
+GET /monitoringPlatform/mentee/mentors
 Authorization: Bearer <jwt_token>
 
 Response:
@@ -399,6 +399,8 @@ const Chat = ({ sessionId, participantName, isMentor, currentUsername, sessionDa
 ### 4.2 Chat Service Architecture
 ```typescript
 // ChatService.ts - WebSocket Chat Service
+import { WS_BASE_URL } from '../config/env';
+
 export class ChatService {
     private stompClient: CompatClient | null = null;
     private isConnected = false;
@@ -408,10 +410,13 @@ export class ChatService {
 
     public async connect(sessionId: string, username: string): Promise<boolean> {
         // @stomp/stompjs v7: pass a factory for reconnect support
-        this.stompClient = Stomp.over(() => new SockJS('http://localhost:8080/ws'));
+        this.stompClient = Stomp.over(() => new SockJS(WS_BASE_URL));
         
         return new Promise((resolve) => {
-            this.stompClient?.connect({}, () => {
+            const token = localStorage.getItem('token');
+            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+            this.stompClient?.connect(headers, () => {
                 // Subscribe to chat topic for this session
                 this.stompClient?.subscribe(`/topic/chat/${sessionId}`, (msg) => {
                     const chatMessage: ChatMessage = JSON.parse(msg.body);
@@ -660,11 +665,11 @@ this.peerConnection.oniceconnectionstatechange = () => {
 
 ### 6.1 Authentication Service
 ```typescript
+import { API_BASE_URL } from '../config/env';
+
 export class AuthService {
-    private static readonly API_BASE_URL = 'http://localhost:8080/monitoringPlatform/auth';
-    
     static async login(username: string, password: string): Promise<ApiResponse<AuthResponse>> {
-        const response = await fetch(`${this.API_BASE_URL}/login`, {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
@@ -673,7 +678,7 @@ export class AuthService {
     }
     
     static async signup(signupData: SignupRequest): Promise<ApiResponse<SignupResponse>> {
-        const response = await fetch(`${this.API_BASE_URL}/signup`, {
+        const response = await fetch(`${API_BASE_URL}/auth/signup`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(signupData)
@@ -694,11 +699,11 @@ export class AuthService {
 
 ### 6.2 Session Service
 ```typescript
+import { API_BASE_URL } from '../config/env';
+
 export class SessionService {
-    private static readonly API_BASE_URL = 'http://localhost:8080/monitoringPlatform/sessions';
-    
     static async bookSession(bookingRequest: SessionBookingRequest): Promise<ApiResponse<SessionResponse>> {
-        const response = await fetch(`${this.API_BASE_URL}/book`, {
+        const response = await fetch(`${API_BASE_URL}/sessions/book`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -710,7 +715,7 @@ export class SessionService {
     }
     
     static async getUpcomingSessions(): Promise<ApiResponse<SessionResponse[]>> {
-        const response = await fetch(`${this.API_BASE_URL}/upcoming`, {
+        const response = await fetch(`${API_BASE_URL}/sessions/upcoming`, {
             headers: {
                 'Authorization': `Bearer ${AuthService.getStoredToken()}`
             }
@@ -893,23 +898,13 @@ services:
     image: postgres:15
     environment:
       POSTGRES_DB: mentoringdb
-      POSTGRES_USER: rahulkr
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-  
-  server:
-    build: ./Server
-    ports:
-      - "8080:8080"
-    depends_on:
-      - postgres
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mentoringdb
-      SPRING_DATASOURCE_USERNAME: rahulkr
-      SPRING_DATASOURCE_PASSWORD: password
+      - ./setup-postgresql.sql:/docker-entrypoint-initdb.d/setup-postgresql.sql
 
 volumes:
   postgres_data:
@@ -991,7 +986,7 @@ class AuthControllerIntegrationTest {
 - **Query Optimization**: Use JPA projections for selective data fetching
 
 ### 11.2 Frontend Optimization
-- **Code Splitting**: Implement React.lazy() for component lazy loading
+- **Code Splitting**: Planned improvement (current app does not broadly use `React.lazy()`)
 - **Memoization**: Use React.memo() and useMemo() for expensive computations
 - **Bundle Optimization**: Configure webpack for optimal bundle size
 

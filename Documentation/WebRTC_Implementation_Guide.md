@@ -668,7 +668,7 @@ The system successfully establishes direct peer-to-peer connections for efficien
 1. **TURN Server Integration**: Handle restrictive firewalls
 2. **Connection Quality Monitoring**: Adaptive bitrate
 3. **Session Recording**: Record video calls with consent
-4. **Reconnection Logic**: Automatic reconnection on failures
+4. **Improve Existing Reconnection Logic**: tune retries, telemetry, and UX around recovery flows
 5. **Mobile Support**: React Native implementation
 
 ### Performance Optimizations

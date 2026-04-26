@@ -121,7 +121,7 @@ These tests do not call the registration API.
 
 ### `auth.spec.ts`
 
-Full-stack flows: **sign up** (POST `/auth/signup`) then **sign in** (POST `/auth/login`), for both **MENTEE** and **MENTOR** (role chosen in the signup form).
+Full-stack flows: **sign up** (POST `/monitoringPlatform/auth/signup`) then **sign in** (POST `/monitoringPlatform/auth/login`), for both **MENTEE** and **MENTOR** (role chosen in the signup form).
 
 Assertions after login:
 

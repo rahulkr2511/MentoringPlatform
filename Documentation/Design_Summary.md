@@ -46,14 +46,14 @@ This document provides a comprehensive analysis of the Mentoring Platform applic
 ### 4. Real-time Chat Communication
 - Session-based real-time text messaging
 - WebSocket-based chat using STOMP protocol
-- Message persistence during session duration
+- Live message fan-out via STOMP topics (no server-side chat persistence)
 - Sender identification and timestamp display
 - Connection status indicators
 - Message validation and error handling
 
 ### 5. Mentor Discovery
 - Browse available mentors with detailed profiles
-- Filter by expertise, availability, and ratings
+- Filter by expertise and availability (rating is currently a UI placeholder)
 - View mentor profiles with expertise, hourly rates, and descriptions
 - Book sessions with selected mentors with time slot selection
 - Real-time availability checking
@@ -65,6 +65,8 @@ This document provides a comprehensive analysis of the Mentoring Platform applic
 2. **user_roles** - Role assignments (MENTOR/MENTEE)
 3. **sessions** - Session bookings and details
 4. **availabilities** - Mentor availability schedules
+5. **push_subscriptions** - Browser push endpoints per user
+6. **user_notifications** - Persisted in-app notification records
 
 ### Key Relationships
 - Users can have multiple roles
@@ -82,13 +84,16 @@ This document provides a comprehensive analysis of the Mentoring Platform applic
 ### Session Management Endpoints
 - `POST /monitoringPlatform/sessions/book` - Book a session with mentor
 - `POST /monitoringPlatform/sessions/availability` - Get available time slots
+- `GET /monitoringPlatform/sessions/availability/{mentorId}/summary` - Get mentor availability summary
 - `GET /monitoringPlatform/sessions/upcoming` - Get upcoming sessions
 - `GET /monitoringPlatform/sessions/history` - Get session history
 - `PUT /monitoringPlatform/sessions/{id}/status` - Update session status (mentor only)
 - `PUT /monitoringPlatform/sessions/{id}/cancel` - Cancel session
+- `POST /monitoringPlatform/sessions/{sessionId}/presence/join` - Record session join presence event
 
 ### Profile Management Endpoints
-- `GET /monitoringPlatform/mentors` - Get all available mentors
+- `GET /monitoringPlatform/mentee/mentors` - Get available mentors
+- `GET /monitoringPlatform/mentee/mentors/all` - Get all mentors
 - `GET /monitoringPlatform/mentor/profile` - Get mentor profile
 - `PUT /monitoringPlatform/mentor/profile` - Update mentor profile
 
@@ -143,12 +148,13 @@ This document provides a comprehensive analysis of the Mentoring Platform applic
 - **REST controllers** continue to use `@CrossOrigin` where declared.
 - **`/error` permitted**: Spring Boot’s error dispatch is `permitAll()` so failed SockJS (or other) requests are not turned into 403 after security.
 - **API exception handling**: `GlobalExceptionHandler` is scoped with `@RestControllerAdvice(basePackages = "com.mentoringplatform.server.controller")` so SockJS/WebSocket servlet paths are not wrapped in `ApiResponse` JSON (which breaks SockJS parsing).
+- **WebSocket handshake auth**: HTTP security currently permits `/ws/**`; STOMP message-level JWT interception is not configured in this codebase.
 - **Build hygiene**: After removing or renaming config classes, run `mvn clean compile` in `Server` so stale `.class` files under `target/classes` do not load at runtime.
 
 ## Frontend Architecture
 
 ### Component Structure
-- **App.js** - Main application component with routing and authentication state
+- **App.js** - Main application component with view-state navigation and authentication state
 - **Login.jsx** - Authentication interface with signup/login forms and validation
 - **MenteeDashboard.jsx** - Mentee-specific dashboard with mentor discovery and booking
 - **MentorDashboard.jsx** - Mentor-specific dashboard with session management and profile
@@ -172,6 +178,8 @@ This document provides a comprehensive analysis of the Mentoring Platform applic
 - **MenteeDashboardController** - Mentor discovery and listing
 - **SignalingController** - WebRTC signaling via WebSocket
 - **ChatController** - Real-time chat messaging
+- **NotificationController** - In-app notifications read and listing APIs
+- **PushSubscriptionController** - Browser push subscription registration API
 
 ### Service Layer
 - **UserService** - User business logic and authentication
@@ -179,6 +187,8 @@ This document provides a comprehensive analysis of the Mentoring Platform applic
 - **AvailabilityService** - Availability management and time slot calculation
 - **MentorService** - Mentor-specific operations and profile management
 - **ProfileService** - Profile management for mentors
+- **NotificationService** - Notification persistence and read-state updates
+- **PushNotificationDispatcher / VapidWebPushGateway** - Async Web Push dispatch and delivery handling
 
 ### Repository Layer
 - **UserRepository** - User data access with JPA
@@ -194,7 +204,7 @@ This document provides a comprehensive analysis of the Mentoring Platform applic
 
 ### Docker Support
 - docker-compose.yml for containerized deployment
-- PostgreSQL and Spring Boot containers
+- PostgreSQL and pgAdmin containers
 - Environment variable configuration
 
 ## Performance Considerations
@@ -205,7 +215,7 @@ This document provides a comprehensive analysis of the Mentoring Platform applic
 - JPA optimizations
 
 ### Frontend Optimization
-- Code splitting and lazy loading
+- Memoization and render-optimization opportunities are available; broad lazy-loading is not yet implemented
 - Memoization for expensive operations
 - Bundle optimization
 
@@ -217,14 +227,11 @@ This document provides a comprehensive analysis of the Mentoring Platform applic
 ## Testing Strategy
 
 ### Backend Testing
-- Unit tests with JUnit and Mockito
-- Integration tests with TestRestTemplate
-- Security testing with Spring Security Test
+- Spring test dependencies are configured, but repository test coverage is currently limited
 
 ### Frontend Testing
-- Component testing with React Testing Library
-- Service layer testing
-- WebRTC integration testing
+- Playwright E2E tests cover home/auth flows
+- React Testing Library setup exists; default CRA sample test still needs project-specific assertions
 
 ## Future Enhancements
 
@@ -251,13 +258,13 @@ This document provides a comprehensive analysis of the Mentoring Platform applic
 ## Implementation Details
 
 ### Frontend Implementation
-- **React 19.1.0** with TypeScript for type safety
+- **React 19.1.0** with a mixed JavaScript/TypeScript codebase
 - **Component-based architecture** with reusable components
 - **Service layer pattern** for API communication
 - **Context API** for notification management
 - **Local storage** for authentication persistence
 - **Form validation** with real-time error feedback
-- **Responsive design** with CSS modules
+- **Responsive design** with CSS stylesheets
 
 ### Backend Implementation
 - **Spring Boot 3.2.3** with Java 17

@@ -104,7 +104,7 @@ docker run --name mentoring-postgres \
   -e POSTGRES_PASSWORD=postgres \
   -e POSTGRES_DB=mentoringdb \
   -p 5432:5432 \
-  -d postgres:14
+  -d postgres:15
 ```
 
 **Verify PostgreSQL is running:**
@@ -121,7 +121,7 @@ Update `Server/src/main/resources/application.properties` if needed:
 
 ### Starting the Application
 
-> **📖 For detailed script documentation, see [SCRIPTS_README.md](../SCRIPTS_README.md)**
+> Startup scripts are documented inline in this README (`start.sh`, `start.bat`, `stop.sh`, `stop.bat`).
 
 #### Option 1: Using Startup Scripts (Recommended)
 

@@ -11,7 +11,7 @@ The Mentoring Platform is a comprehensive web-based application that facilitates
 - **Authentication System**
   - Login/Register forms with validation
   - JWT token-based authentication
-  - Role-based routing (MENTOR/MENTEE)
+  - Role-based dashboard switching (MENTOR/MENTEE)
   - Form validation with real-time error feedback
 
 - **Dashboard Components**
@@ -41,6 +41,8 @@ The Mentoring Platform is a comprehensive web-based application that facilitates
   - **MenteeDashboardController**: Mentor discovery and listing
   - **SignalingController**: WebRTC signaling via WebSocket
   - **ChatController**: Real-time chat messaging
+  - **NotificationController**: Notification listing/read-state APIs
+  - **PushSubscriptionController**: Push subscription registration
 
 - **Services**
   - **UserService**: User business logic and authentication
@@ -48,6 +50,9 @@ The Mentoring Platform is a comprehensive web-based application that facilitates
   - **AvailabilityService**: Availability management and time slots
   - **MentorService**: Mentor-specific operations
   - **ProfileService**: Profile management for mentors
+  - **NotificationService**: Notification persistence and read-state updates
+  - **PushNotificationDispatcher**: Async push dispatch
+  - **VapidWebPushGateway**: VAPID-signed browser push delivery
 
 - **WebSocket Implementation**
   - STOMP protocol over SockJS
@@ -61,6 +66,8 @@ The Mentoring Platform is a comprehensive web-based application that facilitates
   - **user_roles**: Role assignments (MENTOR/MENTEE)
   - **sessions**: Session bookings with status tracking
   - **availabilities**: Mentor availability schedules
+  - **push_subscriptions**: Browser push subscription records
+  - **user_notifications**: Persisted in-app notifications
 
 - **Features**
   - JPA entities with proper relationships
@@ -78,7 +85,7 @@ The Mentoring Platform is a comprehensive web-based application that facilitates
 - **Chat Implementation**
   - Session-based real-time messaging
   - WebSocket-based chat using STOMP
-  - Message persistence during sessions
+  - Live message fan-out during sessions (no server-side chat persistence)
   - Sender identification and timestamps
 
 ## 🚧 IN PROGRESS FEATURES
@@ -101,12 +108,15 @@ The Mentoring Platform is a comprehensive web-based application that facilitates
 
 ### Phase 1: Enhanced User Experience (Q1 2026)
 
-#### Notification System
-- **Real-time Notifications**
-  - Session reminders
-  - Booking confirmations
-  - Status updates
-  - Push notifications (browser/email)
+#### Notification System (already partially delivered)
+- **Implemented now**
+  - Browser push subscriptions + Web Push dispatch
+  - In-app notification drawer APIs (list/read/read-all)
+  - Session-join notification events
+- **Planned next**
+  - Reminder scheduling
+  - Email channels
+  - Rich notification templates
 
 #### Advanced Session Management
 - **Session Recording**
@@ -236,9 +246,8 @@ The Mentoring Platform is a comprehensive web-based application that facilitates
 
 ### Current Testing Status
 - **Backend Testing**
-  - Unit tests with JUnit and Mockito
-  - Integration tests with TestRestTemplate
-  - Security testing with Spring Security Test
+  - Spring test dependencies are configured
+  - Repository currently has limited checked-in backend tests
 
 - **Frontend Testing**
   - Component testing with React Testing Library
@@ -247,7 +256,7 @@ The Mentoring Platform is a comprehensive web-based application that facilitates
 
 ### Planned Testing Enhancements
 - **Comprehensive Test Coverage**
-  - End-to-end testing with Cypress
+  - Expand Playwright end-to-end coverage
   - Performance testing with JMeter
   - Security testing with OWASP ZAP
   - Accessibility testing
@@ -268,7 +277,7 @@ The Mentoring Platform is a comprehensive web-based application that facilitates
 
 - **Docker Support**
   - docker-compose.yml for containerized deployment
-  - PostgreSQL and Spring Boot containers
+  - PostgreSQL and pgAdmin containers
   - Environment variable configuration
 
 ### Planned DevOps Enhancements
@@ -309,7 +318,7 @@ The Mentoring Platform is a comprehensive web-based application that facilitates
 ### Q1 2026
 - ✅ Core platform implementation (COMPLETED)
 - 🚧 Payment integration
-- 📋 Enhanced notification system
+- ✅ Push + in-app notification foundation (COMPLETED)
 - 📋 Session recording capabilities
 
 ### Q2 2026

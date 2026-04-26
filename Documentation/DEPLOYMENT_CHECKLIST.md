@@ -21,7 +21,7 @@ Use this checklist whenever promoting a build to staging or production.
 - [ ] Supply any third-party API keys used by optional services (e.g., analytics, payment).
 
 ## Verification
-- [ ] Smoke-test the join-session flow: trigger `/sessions/{id}/presence/join` and confirm a push notification lands on a subscribed browser.
+- [ ] Smoke-test the join-session flow: trigger `/monitoringPlatform/sessions/{sessionId}/presence/join` and confirm a push notification lands on a subscribed browser.
 - [ ] Validate in-app notification drawer syncs with the server via `GET /monitoringPlatform/notifications`.
 - [ ] Monitor application logs for `VapidWebPushGateway` delivery results and ensure no subscriptions are unexpectedly disabled.
 
