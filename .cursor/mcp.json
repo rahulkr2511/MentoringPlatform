@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "postgres-debug": {
+      "type": "stdio",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "set -a; source \"${workspaceFolder}/.cursor/mcp.env\"; npx -y @modelcontextprotocol/server-postgres \"$DATABASE_URL\""
+      ]
+    }
+  }
+}

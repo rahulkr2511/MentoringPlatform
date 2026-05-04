@@ -119,6 +119,21 @@ Update `Server/src/main/resources/application.properties` if needed:
 - Password: (empty by default, update if needed)
 - Port: `5432`
 
+### Live Database Debugging with Cursor MCP
+
+This repo includes a Cursor MCP server config at `.cursor/mcp.json` so AI can run SQL against PostgreSQL.
+
+1. Create your local MCP env file:
+   ```bash
+   cp .cursor/mcp.env.example .cursor/mcp.env
+   ```
+2. Edit `.cursor/mcp.env` and set a valid `DATABASE_URL`.
+3. Restart Cursor so MCP servers reload.
+4. In Cursor, confirm the `postgres-debug` MCP server is enabled.
+
+Example prompt to run in AI chat:
+`Find all mentees who have not had a session in the last 2 weeks. Write and execute SQL, then show the results.`
+
 ### Starting the Application
 
 > Startup scripts are documented inline in this README (`start.sh`, `start.bat`, `stop.sh`, `stop.bat`).
