@@ -58,7 +58,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         // SockJS uses XHR withCredentials=true; browser then requires Allow-Credentials: true and a concrete
         // Allow-Origin (wildcard * is not allowed with credentials).
-        configuration.setAllowedOriginPatterns(List.of("http://localhost:3000", "http://127.0.0.1:3000"));
+        configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"));
         // With allowCredentials(true), Spring forbids allowedHeaders("*") — it throws and yields 500 on CORS handling.
         configuration.setAllowedHeaders(Arrays.asList(
