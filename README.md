@@ -295,5 +295,9 @@ server.port=8081
 PORT=3001 npm start
 ```
 
+### Deployment details
+Server: https://mentoringplatform.onrender.com
+Client: https://mentoringplatform-client.onrender.com/ 
+DB: Neon
 ---
 
