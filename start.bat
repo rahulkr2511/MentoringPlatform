@@ -167,6 +167,13 @@ cd /d "%SERVER_DIR%"
 REM Clear previous log
 type nul > "%LOGS_DIR%\server.log"
 
+REM Local dev environment variables (safe defaults, no real secrets)
+REM Override any of these by setting them yourself before running this script.
+if not defined SPRING_DATASOURCE_URL set SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/mentoringdb
+if not defined SPRING_DATASOURCE_USERNAME set SPRING_DATASOURCE_USERNAME=rahulkr
+if not defined SPRING_DATASOURCE_PASSWORD set SPRING_DATASOURCE_PASSWORD=
+if not defined JWT_SECRET set JWT_SECRET=dev-super-long-jwt-secret-key-32bytes-minimum-1234
+
 start "Mentoring Platform Server" cmd /c "mvn spring-boot:run > "%LOGS_DIR%\server.log" 2>&1"
 
 REM Wait for server to start

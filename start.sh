@@ -289,6 +289,13 @@ cd "$SERVER_DIR"
 # Clean previous log
 > "$SERVER_DIR/server-logs/server.log"
 
+# Local dev environment variables (safe defaults, no real secrets)
+# Override any of these by exporting them yourself before running this script.
+export SPRING_DATASOURCE_URL="${SPRING_DATASOURCE_URL:-jdbc:postgresql://localhost:5432/mentoringdb}"
+export SPRING_DATASOURCE_USERNAME="${SPRING_DATASOURCE_USERNAME:-rahulkr}"
+export SPRING_DATASOURCE_PASSWORD="${SPRING_DATASOURCE_PASSWORD:-}"
+export JWT_SECRET="${JWT_SECRET:-dev-super-long-jwt-secret-key-32bytes-minimum-1234}"
+
 mvn spring-boot:run > "$SERVER_DIR/server-logs/server.log" 2>&1 &
 SERVER_PID=$!
 
