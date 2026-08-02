@@ -303,7 +303,6 @@ PORT=3001 npm start
 
 
 ## License
-This project is © Rahul K R — All Rights Reserved. Code is shared publicly for
-viewing and portfolio purposes only. See [LICENSE](./LICENSE) for details.
+- This project is © Rahul K R — All Rights Reserved. Code is shared publicly for viewing and portfolio purposes only. See [LICENSE](./LICENSE) for details.
 ---
 
