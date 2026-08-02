@@ -300,5 +300,10 @@ PORT=3001 npm start
 - **Client UI**: https://mentoringplatform-client.onrender.com/ 
 - **Server API**: https://mentoringplatform.onrender.com
 - **DB**: Neon
+
+
+## License
+This project is © Rahul K R — All Rights Reserved. Code is shared publicly for
+viewing and portfolio purposes only. See [LICENSE](./LICENSE) for details.
 ---
 
