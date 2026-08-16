@@ -5,6 +5,7 @@
 This document provides a comprehensive analysis of the Mentoring Platform application, including both High-Level Design (HLD) and Low-Level Design (LLD) documentation. The platform is a web-based application that facilitates 1-on-1 video mentoring sessions between mentors and mentees using WebRTC technology.
 
 ## Architecture Overview
+![MentoringPlatform Preview](https://raw.githubusercontent.com/rahulkr2511/MentoringPlatform/main/Documentation/Architecture-diagram.png)
 
 ### Technology Stack
 - **Frontend**: React 19.1.0 with TypeScript
