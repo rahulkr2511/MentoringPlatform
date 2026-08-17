@@ -10,6 +10,8 @@
 
 ![MentoringPlatform Preview](https://raw.githubusercontent.com/rahulkr2511/MentoringPlatform/main/Documentation/preview_mentoring_platform.png)
 
+![MentoringPlatform Preview](https://raw.githubusercontent.com/rahulkr2511/MentoringPlatform/main/Documentation/landing.png)
+
 </div>
 
 ## 📖 Overview
